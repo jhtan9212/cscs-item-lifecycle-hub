@@ -48,10 +48,15 @@ export interface Comment {
   id: string;
   projectId: string;
   userId: string;
-  userName: string;
+  userName?: string;
   content: string;
   isInternal: boolean;
   createdAt: string;
   updatedAt: string;
+  createdBy?: {
+    id: string;
+    name: string;
+    email: string;
+  };
 }
 

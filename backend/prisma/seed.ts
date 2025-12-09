@@ -64,25 +64,84 @@ async function main() {
     },
   });
 
-  // Create Permissions
+  const supplierRole = await prisma.role.upsert({
+    where: { name: 'Supplier' },
+    update: {},
+    create: {
+      name: 'Supplier',
+      description: 'External supplier partner',
+      isAdmin: false,
+    },
+  });
+
+  const dcOperatorRole = await prisma.role.upsert({
+    where: { name: 'DC Operator' },
+    update: {},
+    create: {
+      name: 'DC Operator',
+      description: 'Distribution center operator',
+      isAdmin: false,
+    },
+  });
+
+  // Create Permissions - Based on screenshots and requirements
   const permissions = [
+    // Projects
     { name: 'CREATE_PROJECT', category: 'Projects', description: 'Create new projects' },
     { name: 'UPDATE_PROJECT', category: 'Projects', description: 'Update projects' },
+    { name: 'UPDATE_ALL_PROJECTS', category: 'Projects', description: 'Edit any project' },
+    { name: 'UPDATE_OWN_PROJECTS', category: 'Projects', description: 'Edit own projects' },
     { name: 'DELETE_PROJECT', category: 'Projects', description: 'Delete projects' },
-    { name: 'VIEW_PROJECT', category: 'Projects', description: 'View projects' },
+    { name: 'VIEW_PROJECT', category: 'Projects', description: 'View all projects in system' },
+    { name: 'VIEW_ALL_PROJECTS', category: 'Projects', description: 'View all projects in system' },
+    { name: 'VIEW_OWN_PROJECTS', category: 'Projects', description: 'View projects assigned to user' },
+    
+    // Items
     { name: 'CREATE_ITEM', category: 'Items', description: 'Create items' },
     { name: 'UPDATE_ITEM', category: 'Items', description: 'Update items' },
     { name: 'DELETE_ITEM', category: 'Items', description: 'Delete items' },
     { name: 'VIEW_ITEM', category: 'Items', description: 'View items' },
+    
+    // Workflow
     { name: 'ADVANCE_WORKFLOW', category: 'Workflow', description: 'Advance workflow stages' },
     { name: 'MOVE_BACK_WORKFLOW', category: 'Workflow', description: 'Move workflow back' },
-    { name: 'APPROVE_PRICING', category: 'Pricing', description: 'Approve pricing' },
-    { name: 'SUBMIT_PRICING', category: 'Pricing', description: 'Submit pricing' },
-    { name: 'VIEW_PRICING', category: 'Pricing', description: 'View pricing' },
+    { name: 'APPROVE_AS_CM', category: 'Workflow', description: 'Approve as Category Manager' },
+    { name: 'APPROVE_AS_SSM', category: 'Workflow', description: 'Approve as Strategic Supply Manager' },
+    { name: 'COMPLETE_DC_SETUP', category: 'Workflow', description: 'Complete DC transition setup and advance project' },
+    { name: 'REJECT_PROJECTS', category: 'Workflow', description: 'Reject project submissions' },
+    { name: 'SUBMIT_FOR_REVIEW', category: 'Workflow', description: 'Submit projects for review' },
+    { name: 'SUBMIT_FREIGHT_STRATEGY', category: 'Workflow', description: 'Submit freight strategy data' },
+    { name: 'SUBMIT_KINEXO_PRICING', category: 'Workflow', description: 'Submit internal pricing' },
+    { name: 'SUBMIT_SUPPLIER_PRICING', category: 'Workflow', description: 'Submit supplier pricing' },
+    { name: 'VIEW_FREIGHT_STRATEGY', category: 'Workflow', description: 'Can view freight strategy data and brackets' },
+    
+    // Pricing
+    { name: 'APPROVE_PRICING', category: 'Pricing', description: 'Approve pricing submissions' },
+    { name: 'SUBMIT_PRICING', category: 'Pricing', description: 'Submit pricing data' },
+    { name: 'VIEW_PRICING', category: 'Pricing', description: 'View pricing data' },
+    
+    // Users
+    { name: 'CREATE_USERS', category: 'Users', description: 'Create new users' },
     { name: 'MANAGE_USERS', category: 'Users', description: 'Manage users' },
-    { name: 'MANAGE_ROLES', category: 'Users', description: 'Manage roles' },
-    { name: 'MANAGE_PERMISSIONS', category: 'Users', description: 'Manage permissions' },
-    { name: 'VIEW_AUDIT_LOGS', category: 'Audit', description: 'View audit logs' },
+    { name: 'MANAGE_ROLES', category: 'Users', description: 'Assign/remove user roles' },
+    { name: 'MANAGE_PERMISSIONS', category: 'Users', description: 'Configure role permissions' },
+    { name: 'VIEW_USERS', category: 'Users', description: 'View user list' },
+    
+    // Audit
+    { name: 'EXPORT_DATA', category: 'Audit', description: 'Export system data' },
+    { name: 'VIEW_AUDIT_LOGS', category: 'Audit', description: 'View audit trail' },
+    
+    // Dashboard
+    { name: 'VIEW_ANALYTICS', category: 'Dashboard', description: 'Access analytics and reports' },
+    { name: 'VIEW_DASHBOARD', category: 'Dashboard', description: 'Access main dashboard' },
+    
+    // Distribution
+    { name: 'MANAGE_DCS', category: 'Distribution', description: 'Create/edit distribution centers' },
+    { name: 'VIEW_DCS', category: 'Distribution', description: 'View distribution centers' },
+    
+    // System
+    { name: 'MANAGE_SETTINGS', category: 'System', description: 'Edit system settings' },
+    { name: 'VIEW_SETTINGS', category: 'System', description: 'View system settings' },
   ];
 
   const createdPermissions = [];
@@ -114,8 +173,14 @@ async function main() {
     });
   }
 
-  // Category Manager permissions
-  const cmPermissions = ['CREATE_PROJECT', 'UPDATE_PROJECT', 'VIEW_PROJECT', 'CREATE_ITEM', 'UPDATE_ITEM', 'VIEW_ITEM', 'ADVANCE_WORKFLOW', 'MOVE_BACK_WORKFLOW', 'APPROVE_PRICING', 'VIEW_PRICING'];
+  // Category Manager permissions - Based on screenshots
+  const cmPermissions = [
+    'VIEW_DASHBOARD', 'VIEW_ANALYTICS', 'VIEW_DCS',
+    'CREATE_ITEM', 'UPDATE_ITEM', 'VIEW_ITEM',
+    'CREATE_PROJECT', 'UPDATE_OWN_PROJECTS', 'VIEW_ALL_PROJECTS', 'VIEW_OWN_PROJECTS',
+    'APPROVE_AS_CM', 'REJECT_PROJECTS', 'SUBMIT_FOR_REVIEW', 'VIEW_FREIGHT_STRATEGY',
+    'APPROVE_PRICING', 'VIEW_PRICING'
+  ];
   for (const permName of cmPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
     if (permission) {
@@ -136,8 +201,15 @@ async function main() {
     }
   }
 
-  // Strategic Supply Manager permissions
-  const ssmPermissions = ['VIEW_PROJECT', 'VIEW_ITEM', 'VIEW_PRICING', 'ADVANCE_WORKFLOW'];
+  // Strategic Supply Manager permissions - Based on screenshots
+  const ssmPermissions = [
+    'VIEW_DASHBOARD', 'VIEW_ANALYTICS', 'VIEW_AUDIT_LOGS',
+    'MANAGE_DCS', 'VIEW_DCS',
+    'CREATE_ITEM', 'VIEW_ITEM',
+    'VIEW_ALL_PROJECTS',
+    'APPROVE_AS_SSM', 'REJECT_PROJECTS', 'VIEW_FREIGHT_STRATEGY',
+    'VIEW_PRICING'
+  ];
   for (const permName of ssmPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
     if (permission) {
@@ -158,8 +230,14 @@ async function main() {
     }
   }
 
-  // Pricing Specialist permissions
-  const pricingPermissions = ['VIEW_PROJECT', 'VIEW_ITEM', 'SUBMIT_PRICING', 'VIEW_PRICING', 'UPDATE_ITEM'];
+  // Pricing Specialist permissions - Based on screenshots
+  const pricingPermissions = [
+    'VIEW_DASHBOARD',
+    'VIEW_ITEM',
+    'VIEW_ALL_PROJECTS',
+    'APPROVE_PRICING',
+    'SUBMIT_PRICING', 'VIEW_PRICING'
+  ];
   for (const permName of pricingPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
     if (permission) {
@@ -180,8 +258,15 @@ async function main() {
     }
   }
 
-  // Logistics permissions
-  const logisticsPermissions = ['VIEW_PROJECT', 'VIEW_ITEM', 'UPDATE_ITEM', 'VIEW_PRICING'];
+  // Logistics permissions - Based on screenshots
+  const logisticsPermissions = [
+    'VIEW_DASHBOARD',
+    'MANAGE_DCS', 'VIEW_DCS',
+    'VIEW_ITEM',
+    'VIEW_ALL_PROJECTS',
+    'SUBMIT_FREIGHT_STRATEGY', 'VIEW_FREIGHT_STRATEGY',
+    'VIEW_PRICING'
+  ];
   for (const permName of logisticsPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
     if (permission) {
@@ -270,6 +355,87 @@ async function main() {
       roleId: logisticsRole.id,
     },
   });
+
+  const supplierUser = await prisma.user.upsert({
+    where: { email: 'supplier@cscs.com' },
+    update: {
+      password: defaultPassword,
+    },
+    create: {
+      email: 'supplier@cscs.com',
+      name: 'Supplier Partner',
+      password: defaultPassword,
+      roleId: supplierRole.id,
+    },
+  });
+
+  const dcOperatorUser = await prisma.user.upsert({
+    where: { email: 'dcoperator@cscs.com' },
+    update: {
+      password: defaultPassword,
+    },
+    create: {
+      email: 'dcoperator@cscs.com',
+      name: 'DC Operator',
+      password: defaultPassword,
+      roleId: dcOperatorRole.id,
+    },
+  });
+
+  // Supplier permissions - Based on screenshots
+  const supplierPermissions = [
+    'VIEW_DASHBOARD',
+    'VIEW_ITEM',
+    'VIEW_OWN_PROJECTS',
+    'SUBMIT_SUPPLIER_PRICING'
+  ];
+  for (const permName of supplierPermissions) {
+    const permission = createdPermissions.find(p => p.name === permName);
+    if (permission) {
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: {
+            roleId: supplierRole.id,
+            permissionId: permission.id,
+          },
+        },
+        update: { granted: true },
+        create: {
+          roleId: supplierRole.id,
+          permissionId: permission.id,
+          granted: true,
+        },
+      });
+    }
+  }
+
+  // DC Operator permissions - Based on screenshots
+  const dcOperatorPermissions = [
+    'VIEW_DASHBOARD',
+    'VIEW_DCS',
+    'VIEW_ITEM',
+    'VIEW_OWN_PROJECTS',
+    'COMPLETE_DC_SETUP'
+  ];
+  for (const permName of dcOperatorPermissions) {
+    const permission = createdPermissions.find(p => p.name === permName);
+    if (permission) {
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: {
+            roleId: dcOperatorRole.id,
+            permissionId: permission.id,
+          },
+        },
+        update: { granted: true },
+        create: {
+          roleId: dcOperatorRole.id,
+          permissionId: permission.id,
+          granted: true,
+        },
+      });
+    }
+  }
 
   // Create test projects at different workflow stages for testing
   console.log('\nCreating test projects...');
@@ -565,6 +731,118 @@ async function main() {
   });
   console.log('✓ Created Transitioning Item project at KINEXO Pricing stage');
 
+  // 7. Project for Supplier - Supplier Pricing stage
+  const supplierProject = await prisma.project.create({
+    data: {
+      projectNumber: generateProjectNumber(),
+      name: 'Office Equipment - Supplier Pricing',
+      description: 'New office equipment items requiring supplier pricing submission',
+      lifecycleType: 'NEW_ITEM',
+      status: 'IN_PROGRESS',
+      currentStage: 'Supplier Pricing',
+      createdById: cmUser.id,
+      items: {
+        create: [
+          {
+            name: 'Ergonomic Desk Chair',
+            description: 'Premium ergonomic office chair',
+            category: 'Furniture',
+            ownedByCategoryManager: true,
+            ownedBySupplier: true,
+            supplierPrice: null, // Needs to be set by supplier
+            supplierItemNumber: null,
+            supplierSpecs: null,
+          },
+          {
+            name: 'Adjustable Monitor Stand',
+            description: 'Height-adjustable monitor stand',
+            category: 'Furniture',
+            ownedByCategoryManager: true,
+            ownedBySupplier: true,
+            supplierPrice: null, // Needs to be set by supplier
+            supplierItemNumber: null,
+            supplierSpecs: null,
+          },
+        ],
+      },
+    },
+  });
+  await WorkflowEngine.initializeWorkflow(supplierProject.id, 'NEW_ITEM');
+  // Set workflow to Supplier Pricing stage (step 3)
+  await prisma.workflowStep.updateMany({
+    where: {
+      projectId: supplierProject.id,
+      stepOrder: { lte: 2 },
+    },
+    data: { status: StepStatus.COMPLETED },
+  });
+  await prisma.workflowStep.updateMany({
+    where: {
+      projectId: supplierProject.id,
+      stepOrder: 3,
+    },
+    data: { status: StepStatus.IN_PROGRESS },
+  });
+  console.log('✓ Created Supplier project at Supplier Pricing stage');
+
+  // 8. Project for DC Operator - In Transition stage
+  const dcProject = await prisma.project.create({
+    data: {
+      projectNumber: generateProjectNumber(),
+      name: 'Warehouse Supplies - DC Setup',
+      description: 'Warehouse supplies ready for distribution center setup',
+      lifecycleType: 'NEW_ITEM',
+      status: 'IN_PROGRESS',
+      currentStage: 'In Transition',
+      createdById: cmUser.id,
+      items: {
+        create: [
+          {
+            name: 'Pallet Jack',
+            description: 'Manual pallet jack for warehouse operations',
+            category: 'Warehouse Equipment',
+            ownedByCategoryManager: true,
+            ownedByDCOperator: true,
+            supplierPrice: 299.99,
+            kinexoPrice: 349.99,
+            freightStrategy: 'Standard Ground',
+            dcStatus: null, // Needs to be set by DC Operator
+            dcNotes: null,
+          },
+          {
+            name: 'Storage Rack',
+            description: 'Heavy-duty storage rack system',
+            category: 'Warehouse Equipment',
+            ownedByCategoryManager: true,
+            ownedByDCOperator: true,
+            supplierPrice: 499.99,
+            kinexoPrice: 579.99,
+            freightStrategy: 'Standard Ground',
+            dcStatus: null, // Needs to be set by DC Operator
+            dcNotes: null,
+          },
+        ],
+      },
+    },
+  });
+  await WorkflowEngine.initializeWorkflow(dcProject.id, 'NEW_ITEM');
+  // Set workflow to In Transition stage (step 7)
+  await prisma.workflowStep.updateMany({
+    where: {
+      projectId: dcProject.id,
+      stepOrder: { lte: 6 },
+    },
+    data: { status: StepStatus.COMPLETED },
+  });
+  await prisma.workflowStep.updateMany({
+    where: {
+      projectId: dcProject.id,
+      stepOrder: 7,
+    },
+    data: { status: StepStatus.IN_PROGRESS },
+  });
+  console.log('✓ Created DC Operator project at In Transition stage');
+
   console.log('\nDatabase seeded successfully!');
   console.log('\nTest Users (password: password123):');
   console.log('Admin:', adminUser.email);
@@ -572,6 +850,8 @@ async function main() {
   console.log('Strategic Supply Manager:', ssmUser.email);
   console.log('Pricing Specialist:', pricingUser.email);
   console.log('Logistics:', logisticsUser.email);
+  console.log('Supplier:', supplierUser.email);
+  console.log('DC Operator:', dcOperatorUser.email);
   console.log('\nTest Projects Created:');
   console.log('- Logistics: Office Supplies (Freight Strategy stage)');
   console.log('- Pricing Specialist: Electronics (KINEXO Pricing stage)');
@@ -579,6 +859,8 @@ async function main() {
   console.log('- Category Manager: Kitchen Supplies (Draft stage)');
   console.log('- Category Manager: Cleaning Supplies (CM Approval stage)');
   console.log('- Pricing Specialist: Office Furniture Transition (KINEXO Pricing stage)');
+  console.log('- Supplier: Office Equipment (Supplier Pricing stage)');
+  console.log('- DC Operator: Warehouse Supplies (In Transition stage)');
 }
 
 main()

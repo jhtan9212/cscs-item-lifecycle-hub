@@ -41,6 +41,49 @@ export const checkPermission = (permissionName: string) => {
   };
 };
 
+// Check for any of the provided permissions
+export const checkAnyPermission = (...permissionNames: string[]) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      // Admin always has all permissions
+      if (req.user.isAdmin) {
+        return next();
+      }
+
+      // Check if user has any of the required permissions
+      const rolePermissions = await prisma.rolePermission.findMany({
+        where: {
+          roleId: req.user.roleId,
+          permission: {
+            name: {
+              in: permissionNames,
+            },
+          },
+          granted: true,
+        },
+        include: {
+          permission: true,
+        },
+      });
+
+      if (rolePermissions.length === 0) {
+        return res.status(403).json({
+          error: 'Insufficient permissions',
+          required: permissionNames,
+        });
+      }
+
+      next();
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
+  };
+};
+
 export const checkRole = (...roleNames: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -87,4 +130,3 @@ export const checkAdmin = async (
     return res.status(500).json({ error: error.message });
   }
 };
-

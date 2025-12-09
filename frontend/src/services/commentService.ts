@@ -7,12 +7,9 @@ export const commentService = {
     return response.data;
   },
 
-  create: async (projectId: string, content: string, userId?: string, userName?: string): Promise<Comment> => {
+  create: async (projectId: string, content: string): Promise<Comment> => {
     const response = await api.post<Comment>(`/comments/projects/${projectId}/comments`, {
       content,
-      userId,
-      userName,
-      isInternal: true,
     });
     return response.data;
   },

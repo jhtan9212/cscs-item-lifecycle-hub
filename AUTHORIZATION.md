@@ -234,6 +234,92 @@ Admin role has access to all features and operations:
 
 ---
 
+## 6. Supplier
+
+**Email:** `supplier@cscs.com`  
+**Password:** `password123`
+
+### Permissions: **Supplier Operations**
+
+#### Projects
+- ✅ **VIEW_OWN_PROJECTS** - View projects assigned to supplier
+- ❌ **CREATE_PROJECT** - Cannot create projects
+- ❌ **UPDATE_PROJECT** - Cannot update projects
+- ❌ **DELETE_PROJECT** - Cannot delete projects
+- ❌ **VIEW_ALL_PROJECTS** - Cannot view all projects
+
+#### Items
+- ✅ **VIEW_ITEM** - View items
+- ❌ **CREATE_ITEM** - Cannot create items
+- ❌ **UPDATE_ITEM** - Cannot update items
+- ❌ **DELETE_ITEM** - Cannot delete items
+
+#### Workflow
+- ✅ **SUBMIT_SUPPLIER_PRICING** - Submit supplier pricing
+- ❌ **ADVANCE_WORKFLOW** - Cannot advance workflow stages
+- ❌ **MOVE_BACK_WORKFLOW** - Cannot move workflow back
+
+#### Pricing
+- ❌ **APPROVE_PRICING** - Cannot approve pricing
+- ❌ **SUBMIT_PRICING** - Cannot submit KINEXO pricing
+- ❌ **VIEW_PRICING** - Cannot view pricing (may be restricted)
+
+#### Dashboard
+- ✅ **VIEW_DASHBOARD** - Access main dashboard
+- ❌ **VIEW_ANALYTICS** - Cannot view analytics
+
+### Access Level
+- Primary responsibility: Submit supplier pricing and item specifications
+- Can view own assigned projects
+- Can view items
+- Can submit supplier pricing
+- Limited access to system features
+
+---
+
+## 7. DC Operator
+
+**Email:** `dcoperator@cscs.com`  
+**Password:** `password123`
+
+### Permissions: **Distribution Center Operations**
+
+#### Projects
+- ✅ **VIEW_OWN_PROJECTS** - View projects assigned to DC
+- ❌ **CREATE_PROJECT** - Cannot create projects
+- ❌ **UPDATE_PROJECT** - Cannot update projects
+- ❌ **DELETE_PROJECT** - Cannot delete projects
+- ❌ **VIEW_ALL_PROJECTS** - Cannot view all projects
+
+#### Items
+- ✅ **VIEW_ITEM** - View items
+- ❌ **CREATE_ITEM** - Cannot create items
+- ❌ **UPDATE_ITEM** - Cannot update items
+- ❌ **DELETE_ITEM** - Cannot delete items
+
+#### Workflow
+- ✅ **COMPLETE_DC_SETUP** - Complete DC transition setup and advance project
+- ❌ **ADVANCE_WORKFLOW** - Cannot advance workflow stages (except DC setup)
+- ❌ **MOVE_BACK_WORKFLOW** - Cannot move workflow back
+
+#### Distribution
+- ✅ **VIEW_DCS** - View distribution centers
+- ❌ **MANAGE_DCS** - Cannot manage distribution centers
+
+#### Dashboard
+- ✅ **VIEW_DASHBOARD** - Access main dashboard
+- ❌ **VIEW_ANALYTICS** - Cannot view analytics
+
+### Access Level
+- Primary responsibility: Distribution center operations and DC setup
+- Can view own assigned projects
+- Can view items
+- Can complete DC setup tasks
+- Can view distribution centers
+- Limited access to system features
+
+---
+
 ## Permission Categories
 
 ### Available Permissions in the System
@@ -265,7 +351,41 @@ Admin role has access to all features and operations:
 - `MANAGE_PERMISSIONS` - Manage permissions
 
 #### Audit Category
-- `VIEW_AUDIT_LOGS` - View audit logs
+- `EXPORT_DATA` - Export system data
+- `VIEW_AUDIT_LOGS` - View audit trail
+
+#### Dashboard Category
+- `VIEW_ANALYTICS` - Access analytics and reports
+- `VIEW_DASHBOARD` - Access main dashboard
+
+#### Distribution Category
+- `MANAGE_DCS` - Create/edit distribution centers
+- `VIEW_DCS` - View distribution centers
+
+#### System Category
+- `MANAGE_SETTINGS` - Edit system settings
+- `VIEW_SETTINGS` - View system settings
+
+#### Workflow Category (Extended)
+- `APPROVE_AS_CM` - Approve as Category Manager
+- `APPROVE_AS_SSM` - Approve as Strategic Supply Manager
+- `COMPLETE_DC_SETUP` - Complete DC transition setup
+- `REJECT_PROJECTS` - Reject project submissions
+- `SUBMIT_FOR_REVIEW` - Submit projects for review
+- `SUBMIT_FREIGHT_STRATEGY` - Submit freight strategy data
+- `SUBMIT_KINEXO_PRICING` - Submit internal pricing
+- `SUBMIT_SUPPLIER_PRICING` - Submit supplier pricing
+- `VIEW_FREIGHT_STRATEGY` - View freight strategy data and brackets
+
+#### Projects Category (Extended)
+- `UPDATE_ALL_PROJECTS` - Edit any project
+- `UPDATE_OWN_PROJECTS` - Edit own projects
+- `VIEW_ALL_PROJECTS` - View all projects in system
+- `VIEW_OWN_PROJECTS` - View projects assigned to user
+
+#### Users Category (Extended)
+- `CREATE_USERS` - Create new users
+- `VIEW_USERS` - View user list
 
 ---
 

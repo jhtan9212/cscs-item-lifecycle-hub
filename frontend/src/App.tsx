@@ -12,6 +12,8 @@ import { RoleManagement } from './pages/RoleManagement';
 import { MyTasks } from './pages/MyTasks';
 import { PricingWorkflow } from './pages/PricingWorkflow';
 import { LogisticsWorkflow } from './pages/LogisticsWorkflow';
+import { Notifications } from './pages/Notifications';
+import { Tasks } from './pages/Tasks';
 import './App.css';
 
 function App() {
@@ -29,6 +31,8 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/my-tasks" element={<MyTasks />} />
+                    <Route path="/tasks" element={<Tasks />} />
+                    <Route path="/notifications" element={<Notifications />} />
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/projects/new" element={<NewProject />} />
                     <Route path="/projects/:id" element={<ProjectDetail />} />

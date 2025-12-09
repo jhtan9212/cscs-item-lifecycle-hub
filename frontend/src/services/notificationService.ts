@@ -4,13 +4,8 @@ export interface Notification {
   id: string;
   userId: string;
   type: string;
-  title: string;
   message: string;
-  read: boolean;
-  readAt?: string;
-  relatedProjectId?: string;
-  relatedEntityType?: string;
-  relatedEntityId?: string;
+  isRead: boolean;
   createdAt: string;
 }
 

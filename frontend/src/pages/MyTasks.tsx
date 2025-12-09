@@ -72,6 +72,8 @@ export const MyTasks: FC = () => {
       'Logistics': `Projects at "Freight Strategy" stage requiring freight strategy submission`,
       'Strategic Supply Manager': `Projects at "SSM Approval" stage requiring your review and approval`,
       'Category Manager': `Projects requiring your attention`,
+      'Supplier': `Projects at "Supplier Pricing" stage requiring supplier pricing submission`,
+      'DC Operator': `Projects at DC-related stages requiring distribution center operations`,
     };
 
     return messages[roleName] || `Projects assigned to ${roleName}`;
@@ -103,7 +105,7 @@ export const MyTasks: FC = () => {
               <div key={project.id} className="relative">
                 <ProjectCard project={project} />
                 <div className="mt-2 space-y-2">
-                  {project.currentStage === 'KINEXO Pricing' && (
+                  {project.currentStage === 'KINEXO Pricing' && user?.role.name === 'Pricing Specialist' && (
                     <button
                       onClick={() => navigate(`/projects/${project.id}/pricing`)}
                       className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
@@ -111,12 +113,28 @@ export const MyTasks: FC = () => {
                       Review Pricing
                     </button>
                   )}
-                  {project.currentStage === 'Freight Strategy' && (
+                  {project.currentStage === 'Freight Strategy' && user?.role.name === 'Logistics' && (
                     <button
                       onClick={() => navigate(`/projects/${project.id}/freight`)}
                       className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
                     >
                       Set Freight Strategy
+                    </button>
+                  )}
+                  {project.currentStage === 'Supplier Pricing' && user?.role.name === 'Supplier' && (
+                    <button
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                    >
+                      Submit Supplier Pricing
+                    </button>
+                  )}
+                  {(project.currentStage === 'In Transition' || project.currentStage === 'DC Transition' || project.currentStage === 'DC Runout') && user?.role.name === 'DC Operator' && (
+                    <button
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                    >
+                      Complete DC Setup
                     </button>
                   )}
                   <button

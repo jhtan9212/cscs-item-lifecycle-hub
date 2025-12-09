@@ -25,7 +25,11 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
     supplierPrice: item?.supplierPrice || undefined,
     kinexoPrice: item?.kinexoPrice || undefined,
     freightStrategy: item?.freightStrategy || '',
+    freightBrackets: item?.freightBrackets || null,
     supplierItemNumber: item?.supplierItemNumber || '',
+    supplierSpecs: item?.supplierSpecs || null,
+    dcStatus: item?.dcStatus || '',
+    dcNotes: item?.dcNotes || '',
     ownedByCategoryManager: item?.ownedByCategoryManager ?? true,
     ownedByStrategicSupply: item?.ownedByStrategicSupply ?? false,
     ownedByPricingSpecialist: item?.ownedByPricingSpecialist ?? false,
@@ -138,9 +142,29 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         <div className="space-y-4">
           <Input
             label="Freight Strategy"
-            value={formData.freightStrategy}
+            value={formData.freightStrategy || ''}
             onChange={(e) => setFormData({ ...formData, freightStrategy: e.target.value })}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Freight Brackets (JSON)
+            </label>
+            <textarea
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={4}
+              value={typeof formData.freightBrackets === 'string' ? formData.freightBrackets : (formData.freightBrackets ? JSON.stringify(formData.freightBrackets, null, 2) : '')}
+              onChange={(e) => {
+                try {
+                  const parsed = e.target.value ? JSON.parse(e.target.value) : null;
+                  setFormData({ ...formData, freightBrackets: parsed });
+                } catch {
+                  setFormData({ ...formData, freightBrackets: e.target.value as any });
+                }
+              }}
+              placeholder='{"zone1": 10.00, "zone2": 15.00, "zone3": 20.00}'
+            />
+            <p className="text-xs text-gray-500 mt-1">Enter valid JSON format</p>
+          </div>
         </div>
       </div>
 
@@ -151,9 +175,62 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         <div className="space-y-4">
           <Input
             label="Supplier Item Number"
-            value={formData.supplierItemNumber}
+            value={formData.supplierItemNumber || ''}
             onChange={(e) => setFormData({ ...formData, supplierItemNumber: e.target.value })}
           />
+          <Input
+            label="Supplier Price"
+            type="number"
+            step="0.01"
+            value={formData.supplierPrice || ''}
+            onChange={(e) => setFormData({ ...formData, supplierPrice: parseFloat(e.target.value) || undefined })}
+          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Supplier Specifications (JSON)
+            </label>
+            <textarea
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={4}
+              value={typeof formData.supplierSpecs === 'string' ? formData.supplierSpecs : (formData.supplierSpecs ? JSON.stringify(formData.supplierSpecs, null, 2) : '')}
+              onChange={(e) => {
+                try {
+                  const parsed = e.target.value ? JSON.parse(e.target.value) : null;
+                  setFormData({ ...formData, supplierSpecs: parsed });
+                } catch {
+                  setFormData({ ...formData, supplierSpecs: e.target.value as any });
+                }
+              }}
+              placeholder='{"material": "Steel", "dimensions": "10x5x2", "weight": "5 lbs"}'
+            />
+            <p className="text-xs text-gray-500 mt-1">Enter valid JSON format</p>
+          </div>
+        </div>
+      </div>
+
+      {/* DC Operator Fields */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <FieldOwnershipLabel owner={FIELD_OWNERSHIP.DC_OPERATOR.owner} />
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">DC Operator Fields</h3>
+        <div className="space-y-4">
+          <Input
+            label="DC Status"
+            value={formData.dcStatus || ''}
+            onChange={(e) => setFormData({ ...formData, dcStatus: e.target.value })}
+            placeholder="e.g., In Stock, Transitioning, Runout"
+          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              DC Notes
+            </label>
+            <textarea
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={3}
+              value={formData.dcNotes || ''}
+              onChange={(e) => setFormData({ ...formData, dcNotes: e.target.value })}
+              placeholder="DC setup notes, inventory status, etc."
+            />
+          </div>
         </div>
       </div>
 

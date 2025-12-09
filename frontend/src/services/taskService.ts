@@ -41,7 +41,12 @@ export const taskService = {
     return response.data;
   },
 
-  complete: async (id: string): Promise<Task> => {
+  getUserTasks: async (): Promise<Task[]> => {
+    const response = await api.get<Task[]>('/tasks/user');
+    return response.data;
+  },
+
+  completeTask: async (id: string): Promise<Task> => {
     const response = await api.post<Task>(`/tasks/${id}/complete`);
     return response.data;
   },

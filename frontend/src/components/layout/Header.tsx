@@ -30,6 +30,11 @@ export const Header: FC = () => {
                     My Tasks
                   </Button>
                 </Link>
+                <Link to="/tasks">
+                  <Button variant="outline" size="sm">
+                    Tasks
+                  </Button>
+                </Link>
                 {hasPermission('MANAGE_PERMISSIONS') && (
                   <Link to="/role-management">
                     <Button variant="outline" size="sm">

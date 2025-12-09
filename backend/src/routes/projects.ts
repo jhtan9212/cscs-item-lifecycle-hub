@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as projectController from '../controllers/projectController';
 import { authenticate } from '../middleware/auth';
-import { checkPermission } from '../middleware/permissions';
+import { checkPermission, checkAnyPermission } from '../middleware/permissions';
 
 const router = Router();
 
@@ -12,16 +12,18 @@ router.get(
   checkPermission('VIEW_PROJECT'),
   projectController.getAllProjects
 );
+// My assigned projects - allow VIEW_PROJECT or VIEW_OWN_PROJECTS
 router.get(
   '/my-assigned',
   authenticate,
-  checkPermission('VIEW_PROJECT'),
+  checkAnyPermission('VIEW_PROJECT', 'VIEW_OWN_PROJECTS'),
   projectController.getMyAssignedProjects
 );
+// Project detail - allow VIEW_PROJECT or VIEW_OWN_PROJECTS (for own assigned projects)
 router.get(
   '/:id',
   authenticate,
-  checkPermission('VIEW_PROJECT'),
+  checkAnyPermission('VIEW_PROJECT', 'VIEW_OWN_PROJECTS'),
   projectController.getProject
 );
 router.get(

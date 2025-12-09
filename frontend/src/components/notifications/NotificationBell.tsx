@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { FC } from 'react';
+import { Link } from 'react-router-dom';
 import { notificationService, type Notification } from '../../services/notificationService';
 import { formatDateTime } from '../../utils/formatters';
 
@@ -84,15 +85,24 @@ export const NotificationBell: FC = () => {
           <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg z-20 border">
             <div className="p-4 border-b flex justify-between items-center">
               <h3 className="font-semibold text-gray-900">Notifications</h3>
-              {unreadCount > 0 && (
-                <button
-                  onClick={handleMarkAllAsRead}
-                  disabled={loading}
+              <div className="flex gap-2">
+                <Link
+                  to="/notifications"
                   className="text-sm text-blue-600 hover:text-blue-700"
+                  onClick={() => setIsOpen(false)}
                 >
-                  Mark all as read
-                </button>
-              )}
+                  View All
+                </Link>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={handleMarkAllAsRead}
+                    disabled={loading}
+                    className="text-sm text-blue-600 hover:text-blue-700"
+                  >
+                    Mark all as read
+                  </button>
+                )}
+              </div>
             </div>
             <div className="max-h-96 overflow-y-auto">
               {notifications.length === 0 ? (
@@ -105,19 +115,25 @@ export const NotificationBell: FC = () => {
                     <div
                       key={notification.id}
                       className={`p-4 hover:bg-gray-50 cursor-pointer ${
-                        !notification.read ? 'bg-blue-50' : ''
+                        !notification.isRead ? 'bg-blue-50' : ''
                       }`}
-                      onClick={() => !notification.read && handleMarkAsRead(notification.id)}
+                      onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className="font-medium text-gray-900">{notification.title}</p>
+                          <p className="font-medium text-gray-900">
+                            {notification.type === 'WORKFLOW_ADVANCED' && 'Workflow Updated'}
+                            {notification.type === 'TASK_ASSIGNED' && 'Task Assigned'}
+                            {notification.type === 'PROJECT_CREATED' && 'Project Created'}
+                            {notification.type === 'ITEM_UPDATED' && 'Item Updated'}
+                            {!['WORKFLOW_ADVANCED', 'TASK_ASSIGNED', 'PROJECT_CREATED', 'ITEM_UPDATED'].includes(notification.type) && 'Notification'}
+                          </p>
                           <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
                           <p className="text-xs text-gray-400 mt-2">
                             {formatDateTime(notification.createdAt)}
                           </p>
                         </div>
-                        {!notification.read && (
+                        {!notification.isRead && (
                           <div className="ml-2 w-2 h-2 bg-blue-600 rounded-full" />
                         )}
                       </div>

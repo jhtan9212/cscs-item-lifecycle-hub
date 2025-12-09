@@ -9,10 +9,13 @@ import { WorkflowTimeline } from '../components/workflow/WorkflowTimeline';
 import { WorkflowControls } from '../components/workflow/WorkflowControls';
 import { ItemList } from '../components/items/ItemList';
 import { ItemForm } from '../components/items/ItemForm';
+import { CommentList } from '../components/comments/CommentList';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { Button } from '../components/common/Button';
 import { formatDate } from '../utils/formatters';
 import { usePermissions } from '../hooks/usePermissions';
+import { commentService } from '../services/commentService';
+import type { Comment } from '../types/project';
 
 export const ProjectDetail: FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,16 +25,29 @@ export const ProjectDetail: FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'items' | 'workflow'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'items' | 'workflow' | 'comments'>('overview');
   const [showItemForm, setShowItemForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
     if (id) {
       loadProject();
       loadItems();
+      loadComments();
     }
   }, [id]);
+
+  const loadComments = async () => {
+    try {
+      if (id) {
+        const data = await commentService.getByProject(id);
+        setComments(data);
+      }
+    } catch (err: any) {
+      console.error('Failed to load comments:', err);
+    }
+  };
 
   const loadProject = async () => {
     try {
@@ -148,7 +164,7 @@ export const ProjectDetail: FC = () => {
 
       <div className="mb-6 border-b">
         <nav className="flex space-x-4">
-          {(['overview', 'items', 'workflow'] as const).map((tab) => (
+          {(['overview', 'items', 'workflow', 'comments'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -159,6 +175,11 @@ export const ProjectDetail: FC = () => {
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === 'comments' && comments.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">
+                  {comments.length}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -261,6 +282,16 @@ export const ProjectDetail: FC = () => {
             canMoveBack={true}
             onAdvance={handleAdvanceWorkflow}
             onMoveBack={handleMoveBackWorkflow}
+          />
+        </div>
+      )}
+
+      {activeTab === 'comments' && (
+        <div className="space-y-6">
+          <CommentList
+            projectId={project.id}
+            comments={comments}
+            onCommentAdded={loadComments}
           />
         </div>
       )}
