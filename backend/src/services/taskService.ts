@@ -78,9 +78,23 @@ export class TaskService {
   ) {
     const { status, limit = 50, offset = 0 } = options || {};
 
+    // Get user's role
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { role: true },
+    });
+
+    if (!user) {
+      return [];
+    }
+
+    // Query tasks assigned to user OR assigned to user's role
     return prisma.task.findMany({
       where: {
-        assignedToId: userId,
+        OR: [
+          { assignedToId: userId },
+          { assignedRole: user.role.name },
+        ],
         ...(status && { status: status as any }),
       },
       include: {

@@ -2,6 +2,7 @@ import prisma from '../config/database';
 import { LifecycleType, StepStatus } from '@prisma/client';
 import { NotificationService } from './notificationService';
 import { TaskService } from './taskService';
+import { logger } from '../utils/logger';
 
 // Workflow stage definitions
 const WORKFLOW_STAGES = {
@@ -175,6 +176,29 @@ export class WorkflowEngine {
       },
     });
 
+    // Complete tasks for the current stage
+    try {
+      const currentStageRole = currentStep.requiredRole;
+      if (currentStageRole) {
+        await prisma.task.updateMany({
+          where: {
+            projectId,
+            assignedRole: currentStageRole,
+            status: 'PENDING',
+            title: { contains: currentStep.stepName },
+          },
+          data: {
+            status: 'COMPLETED',
+            completedAt: new Date(),
+            completedById: userId,
+          },
+        });
+      }
+    } catch (error) {
+      // Log but don't fail workflow advancement
+      logger.error('Error completing tasks:', error);
+    }
+
     // Activate next step
     const nextStep = await prisma.workflowStep.findFirst({
       where: {
@@ -269,6 +293,10 @@ export class WorkflowEngine {
           );
 
           // Create task for the role
+          // Set due date to 7 days from now
+          const dueDate = new Date();
+          dueDate.setDate(dueDate.getDate() + 7);
+
           await TaskService.create({
             projectId,
             type: 'APPROVAL',
@@ -276,6 +304,7 @@ export class WorkflowEngine {
             description: nextStage.description,
             assignedRole: nextStage.requiredRole,
             priority: 'HIGH',
+            dueDate,
           });
         }
       }

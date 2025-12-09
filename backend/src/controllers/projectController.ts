@@ -329,6 +329,34 @@ export const getMyAssignedProjects = async (req: Request, res: Response): Promis
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Admin sees all non-completed projects
+    if (user.role.isAdmin) {
+      const projects = await prisma.project.findMany({
+        where: { status: { not: 'COMPLETED' } },
+        include: {
+          createdBy: {
+            include: {
+              role: true,
+            },
+          },
+          items: true,
+          workflowSteps: {
+            orderBy: { stepOrder: 'asc' },
+          },
+          _count: {
+            select: {
+              items: true,
+              comments: true,
+            },
+          },
+        },
+        orderBy: {
+          updatedAt: 'desc',
+        },
+      });
+      return res.json(projects);
+    }
+
     const roleName = user.role.name;
 
     // Build where clause based on role
