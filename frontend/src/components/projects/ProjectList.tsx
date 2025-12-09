@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
 import { usePermissions } from '@/hooks/usePermissions';
 import { AlertCircle, Plus } from 'lucide-react';
+import { getErrorMessage } from '@/lib/errorUtils';
 
 export const ProjectList = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -28,7 +29,12 @@ export const ProjectList = () => {
       setProjects(data);
       setError(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to load projects');
+      const errorMessage = getErrorMessage(err);
+      if (err.response?.status === 403) {
+        setError('You do not have permission to view projects. Please contact your administrator.');
+      } else {
+        setError(errorMessage || 'Failed to load projects');
+      }
     } finally {
       setLoading(false);
     }

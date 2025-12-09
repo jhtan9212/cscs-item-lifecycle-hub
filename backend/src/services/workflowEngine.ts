@@ -439,6 +439,13 @@ export class WorkflowEngine {
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
+        createdBy: {
+          include: {
+            role: true,
+          },
+        },
+        organization: true,
+        items: true,
         workflowSteps: {
           orderBy: { stepOrder: 'asc' },
         },

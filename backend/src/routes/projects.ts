@@ -5,31 +5,32 @@ import { checkPermission, checkAnyPermission } from '../middleware/permissions';
 
 const router = Router();
 
-// View routes - require VIEW_PROJECT permission
+// View routes - require VIEW_PROJECT, VIEW_ALL_PROJECTS, or VIEW_OWN_PROJECTS permission
+// Users with VIEW_OWN_PROJECTS will see only their assigned projects (filtered in controller)
 router.get(
   '/',
   authenticate,
-  checkPermission('VIEW_PROJECT'),
+  checkAnyPermission('VIEW_PROJECT', 'VIEW_ALL_PROJECTS', 'VIEW_OWN_PROJECTS'),
   projectController.getAllProjects
 );
-// My assigned projects - allow VIEW_PROJECT or VIEW_OWN_PROJECTS
+// My assigned projects - allow VIEW_PROJECT, VIEW_ALL_PROJECTS, or VIEW_OWN_PROJECTS
 router.get(
   '/my-assigned',
   authenticate,
-  checkAnyPermission('VIEW_PROJECT', 'VIEW_OWN_PROJECTS'),
+  checkAnyPermission('VIEW_PROJECT', 'VIEW_ALL_PROJECTS', 'VIEW_OWN_PROJECTS'),
   projectController.getMyAssignedProjects
 );
-// Project detail - allow VIEW_PROJECT or VIEW_OWN_PROJECTS (for own assigned projects)
+// Project detail - allow VIEW_PROJECT, VIEW_ALL_PROJECTS, or VIEW_OWN_PROJECTS
 router.get(
   '/:id',
   authenticate,
-  checkAnyPermission('VIEW_PROJECT', 'VIEW_OWN_PROJECTS'),
+  checkAnyPermission('VIEW_PROJECT', 'VIEW_ALL_PROJECTS', 'VIEW_OWN_PROJECTS'),
   projectController.getProject
 );
 router.get(
   '/:id/workflow',
   authenticate,
-  checkPermission('VIEW_PROJECT'),
+  checkAnyPermission('VIEW_PROJECT', 'VIEW_ALL_PROJECTS'),
   projectController.getWorkflowStatus
 );
 

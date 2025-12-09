@@ -2,11 +2,25 @@ import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { hashPassword } from '../utils/auth';
 
-export const getAllUsers = async (_req: Request, res: Response): Promise<Response> => {
+export const getAllUsers = async (req: Request, res: Response): Promise<Response> => {
   try {
+    // Get user to check if admin
+    const currentUser = await prisma.user.findUnique({
+      where: { id: req.user!.userId },
+      include: { role: true },
+    });
+
+    // Build where clause - filter by organization unless admin
+    const where: any = {};
+    if (!currentUser?.role.isAdmin && currentUser?.organizationId) {
+      where.organizationId = currentUser.organizationId;
+    }
+
     const users = await prisma.user.findMany({
+      where,
       include: {
         role: true,
+        organization: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -112,7 +126,7 @@ export const updateUser = async (req: Request, res: Response): Promise<Response>
 
 export const createUser = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { name, email, password, roleId } = req.body;
+    const { name, email, password, roleId, organizationId } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Name, email, and password are required' });
@@ -129,6 +143,28 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
 
     if (existingUser) {
       return res.status(400).json({ error: 'User with this email already exists' });
+    }
+
+    // Get current user to determine organization
+    const currentUser = await prisma.user.findUnique({
+      where: { id: req.user!.userId },
+      include: { role: true },
+    });
+
+    // Non-admin users can only create users in their organization
+    let finalOrganizationId = organizationId;
+    if (!currentUser?.role.isAdmin) {
+      finalOrganizationId = currentUser?.organizationId || null;
+    }
+
+    // Verify organization exists if provided
+    if (finalOrganizationId) {
+      const org = await prisma.organization.findUnique({
+        where: { id: finalOrganizationId },
+      });
+      if (!org) {
+        return res.status(400).json({ error: 'Invalid organization ID' });
+      }
     }
 
     // Verify role exists
@@ -161,6 +197,7 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
         email,
         password: hashedPassword,
         roleId: finalRoleId,
+        organizationId: finalOrganizationId || null,
         isActive: true,
       },
       include: {

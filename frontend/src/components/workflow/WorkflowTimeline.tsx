@@ -18,6 +18,9 @@ const getStageColor = (stageName: string, status: 'completed' | 'current' | 'pen
   }
   if (status === 'current') {
     // Color-code current stage based on stage type
+    if (!stageName) {
+      return 'bg-primary text-white';
+    }
     if (stageName.includes('Draft') || stageName.includes('Item Comparison')) {
       return 'bg-blue-500 dark:bg-blue-600 text-white';
     }
@@ -109,7 +112,7 @@ export const WorkflowTimeline: FC<WorkflowTimelineProps> = ({ steps, currentStag
             return (
               <div key={step.id} className="flex items-start">
                 <div className="flex flex-col items-center">
-                  {getStepIcon(status)}
+                  {getStepIcon(status, step.stepName || '')}
                   {!isLast && <div className={cn('w-0.5 h-12 mt-2', getConnectorColor(status))} />}
                 </div>
                 <div className="ml-4 flex-1 pb-6">

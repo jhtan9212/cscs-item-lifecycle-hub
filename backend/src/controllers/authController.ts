@@ -38,13 +38,14 @@ export const register = async (req: Request, res: Response): Promise<Response> =
       }
     }
 
-    // Create user
+    // Create user (registration doesn't assign organization - can be done later by admin)
     const user = await prisma.user.create({
       data: {
         email,
         name,
         password: hashedPassword,
         roleId: finalRoleId,
+        organizationId: null, // New registrations don't get organization automatically
       },
       include: {
         role: {
@@ -56,6 +57,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
             },
           },
         },
+        organization: true,
       },
     });
 
@@ -105,6 +107,7 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
             },
           },
         },
+        organization: true,
       },
     });
 
@@ -170,6 +173,7 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<Respo
             },
           },
         },
+        organization: true,
       },
     });
 

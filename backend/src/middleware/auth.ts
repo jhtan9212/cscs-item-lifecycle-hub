@@ -8,6 +8,7 @@ declare global {
     interface Request {
       user?: JWTPayload & {
         id: string;
+        organizationId?: string;
       };
     }
   }
@@ -33,7 +34,10 @@ export const authenticate = async (
     // Verify user still exists and is active
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      include: { role: true },
+      include: { 
+        role: true,
+        organization: true,
+      },
     });
 
     if (!user || !user.isActive) {
@@ -41,10 +45,11 @@ export const authenticate = async (
       return;
     }
 
-    // Attach user info to request
+    // Attach user info to request (including organization)
     req.user = {
       ...decoded,
       id: user.id,
+      organizationId: user.organizationId || undefined,
     };
 
     next();
@@ -68,13 +73,17 @@ export const optionalAuth = async (
 
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
-        include: { role: true },
+        include: { 
+          role: true,
+          organization: true,
+        },
       });
 
       if (user && user.isActive) {
         req.user = {
           ...decoded,
           id: user.id,
+          organizationId: user.organizationId || undefined,
         };
       }
     }

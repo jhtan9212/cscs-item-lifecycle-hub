@@ -10,6 +10,12 @@ export interface User {
     name: string;
     isAdmin: boolean;
   };
+  organizationId?: string | null;
+  organization?: {
+    id: string;
+    name: string;
+    domain?: string | null;
+  } | null;
   isActive: boolean;
   lastLogin?: string;
   createdAt: string;
@@ -21,12 +27,14 @@ export interface CreateUserData {
   email: string;
   password: string;
   roleId?: string;
+  organizationId?: string;
 }
 
 export interface UpdateUserData {
   name?: string;
   email?: string;
   roleId?: string;
+  organizationId?: string;
   isActive?: boolean;
 }
 

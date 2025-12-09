@@ -17,11 +17,12 @@ This comprehensive test guide covers **ALL POC requirements**, including:
 4. [Role-Based Feature Testing](#role-based-feature-testing)
 5. [Workflow Testing](#workflow-testing)
 6. [Part 2: Advanced Features Testing](#part-2-advanced-features-testing)
-7. [Integration Testing](#integration-testing)
-8. [UI/UX Testing](#uiux-testing)
-9. [Error Handling Testing](#error-handling-testing)
-10. [Performance Testing](#performance-testing)
-11. [Test Checklist](#test-checklist)
+7. [Enterprise Features Testing](#enterprise-features-testing)
+8. [Integration Testing](#integration-testing)
+9. [UI/UX Testing](#uiux-testing)
+10. [Error Handling Testing](#error-handling-testing)
+11. [Performance Testing](#performance-testing)
+12. [Test Checklist](#test-checklist)
 
 ---
 
@@ -48,7 +49,16 @@ This comprehensive test guide covers **ALL POC requirements**, including:
 - ✅ **Comments System**: Project comments with permissions
 - ✅ **Field Validation**: JSON, price, and required field validation
 
-**All Part 2 features are implemented and testable using this guide.**
+### Enterprise Features - **NEWLY IMPLEMENTED**
+- ✅ **Multi-tenant Architecture**: Organization-based data isolation
+- ✅ **Event-driven Lifecycle**: Async event processing system
+- ✅ **Version History**: Item and project version tracking
+- ✅ **Enhanced Color-coded Stages**: Stage-specific visual indicators
+- ✅ **Enhanced Role-aware Interfaces**: Role-specific dashboards and widgets
+- ✅ **Advanced Dashboards**: Analytics, insights, and performance metrics
+- ✅ **Full Lifecycle Visual Flows**: Interactive workflow diagrams
+
+**All Part 2 and Enterprise features are implemented and testable using this guide.**
 
 ---
 
@@ -82,7 +92,7 @@ cp .env.example .env
 # DATABASE_URL="postgresql://user:password@localhost:5432/cscs_poc"
 # JWT_SECRET="your-secret-key-here"
 
-# Run migrations
+# Run migrations (includes new enterprise features)
 npx prisma migrate dev
 
 # Seed database with test data
@@ -139,28 +149,307 @@ npx prisma migrate reset
 
 All test users have password: **`password123`**
 
-| Role | Email | Use Case |
-|------|-------|----------|
-| Admin | `admin@cscs.com` | Full system access testing |
-| Category Manager | `cm@cscs.com` | Project/item management testing |
-| Pricing Specialist | `pricing@cscs.com` | Pricing workflow testing |
-| Logistics | `logistics@cscs.com` | Freight strategy testing |
-| Strategic Supply Manager | `ssm@cscs.com` | Approval workflow testing |
-| Supplier | `supplier@cscs.com` | Supplier pricing submission testing |
-| DC Operator | `dcoperator@cscs.com` | DC setup and operations testing |
+#### KINEXO Corporation (org1) Users:
+| Role | Email | Organization | Use Case |
+|------|-------|--------------|----------|
+| Admin | `admin@cscs.com` | KINEXO Corporation | Full system access testing |
+| Category Manager | `cm@cscs.com` | KINEXO Corporation | Project/item management testing |
+| Pricing Specialist | `pricing@cscs.com` | KINEXO Corporation | Pricing workflow testing |
+| Logistics | `logistics@cscs.com` | KINEXO Corporation | Freight strategy testing |
+| Strategic Supply Manager | `ssm@cscs.com` | KINEXO Corporation | Approval workflow testing |
+| DC Operator | `dcoperator@cscs.com` | KINEXO Corporation | DC setup and operations testing |
+
+#### Partner Organization A (org2) Users:
+| Role | Email | Organization | Use Case |
+|------|-------|--------------|----------|
+| Supplier | `supplier@cscs.com` | Partner Organization A | Supplier pricing submission testing |
+| Category Manager | `cm@partnera.com` | Partner Organization A | Multi-tenant isolation testing |
+| Pricing Specialist | `pricing@partnera.com` | Partner Organization A | Multi-tenant isolation testing |
+
+#### Partner Organization B (org3) Users:
+| Role | Email | Organization | Use Case |
+|------|-------|--------------|----------|
+| Category Manager | `cm@partnerb.com` | Partner Organization B | Multi-tenant isolation testing |
+
+#### No Organization Users:
+| Role | Email | Organization | Use Case |
+|------|-------|--------------|----------|
+| Category Manager | `cm@noorg.com` | None | Edge case testing (no organization) |
 
 ### 3. Pre-Created Test Projects
 
 After seeding, the following test projects are available:
 
+#### KINEXO Corporation (org1) Projects:
+
+**NEW_ITEM Lifecycle:**
 1. **Office Supplies** - Freight Strategy stage (for Logistics)
 2. **Electronics** - KINEXO Pricing stage (for Pricing Specialist)
 3. **IT Equipment** - SSM Approval stage (for Strategic Supply Manager)
 4. **Kitchen Supplies** - Draft stage (for Category Manager)
 5. **Cleaning Supplies** - CM Approval stage (for Category Manager)
-6. **Office Furniture Transition** - KINEXO Pricing stage (Transitioning Item)
-7. **Office Equipment** - Supplier Pricing stage (for Supplier) ⭐ NEW
-8. **Warehouse Supplies** - In Transition stage (for DC Operator) ⭐ NEW
+6. **Warehouse Supplies** - In Transition stage (for DC Operator)
+7. **KINEXO - Additional Project 1** - Supplier Pricing stage (for Supplier)
+8. **KINEXO - Additional Project 2** - Freight Strategy stage (for Logistics)
+9. **KINEXO - Multi-Item Project** - KINEXO Pricing stage (3 items, for Pricing Specialist)
+10. **KINEXO - Completed Project** - Completed stage (for testing completed state)
+
+**TRANSITIONING_ITEM Lifecycle:**
+11. **Office Furniture - Transition** - KINEXO Pricing stage
+12. **KINEXO - Transitioning Item Project** - Item Comparison stage (for Category Manager)
+
+**DELETING_ITEM Lifecycle:**
+13. **KINEXO - Deleting Item Project** - Impact Analysis stage (for Category Manager)
+14. **KINEXO - Item Deletion Review** - SSM Review stage (for Strategic Supply Manager)
+15. **KINEXO - Item Archive** - Archive stage (Admin only)
+
+#### Partner Organization A (org2) Projects:
+1. **Office Equipment - Supplier Pricing** - Supplier Pricing stage
+2. **Partner A - Office Supplies** - Draft stage
+3. **Partner A - Electronics** - KINEXO Pricing stage
+4. **Partner A - Transitioning Item** - Freight Strategy stage
+
+#### Partner Organization B (org3) Projects:
+1. **Partner B - Warehouse Equipment** - Draft stage
+2. **Partner B - Additional Project** - CM Approval stage
+
+#### No Organization Projects:
+1. **No Organization Project** - Draft stage (edge case testing)
+
+---
+
+## Multi-Tenant Architecture Testing
+
+### Test Case 1: Organization Isolation - User View
+
+**Objective:** Verify users can only see projects from their organization
+
+**Steps:**
+1. Login as `cm@cscs.com` (KINEXO Corporation - org1)
+2. Navigate to "Projects" page
+3. Count and list all visible projects
+4. Logout
+5. Login as `cm@partnera.com` (Partner Organization A - org2)
+6. Navigate to "Projects" page
+7. Count and list all visible projects
+8. Logout
+9. Login as `cm@partnerb.com` (Partner Organization B - org3)
+10. Navigate to "Projects" page
+11. Count and list all visible projects
+
+**Expected Results:**
+- ✅ `cm@cscs.com` sees only KINEXO Corporation (org1) projects (15 projects)
+- ✅ `cm@partnera.com` sees only Partner Organization A (org2) projects (4 projects)
+- ✅ `cm@partnerb.com` sees only Partner Organization B (org3) projects (2 projects)
+- ✅ No cross-organization project visibility
+- ✅ Organization name displayed on project cards
+- ✅ Projects show correct organization badge
+
+### Test Case 2: Organization Isolation - Admin View
+
+**Objective:** Verify Admin can see all projects across organizations
+
+**Steps:**
+1. Login as `admin@cscs.com` (Admin - org1)
+2. Navigate to "Projects" page
+3. Count total projects visible
+4. Verify projects from all organizations are visible:
+   - KINEXO Corporation (org1) projects
+   - Partner Organization A (org2) projects
+   - Partner Organization B (org3) projects
+   - No Organization projects
+5. Check organization badges on project cards
+
+**Expected Results:**
+- ✅ Admin sees all projects (21+ total projects)
+- ✅ Projects from all organizations are visible
+- ✅ Organization badges are displayed correctly
+- ✅ Can filter or identify projects by organization
+- ✅ "No Organization" projects are visible
+
+### Test Case 3: Organization Isolation - My Tasks
+
+**Objective:** Verify "My Tasks" respects organization boundaries
+
+**Steps:**
+1. Login as `pricing@cscs.com` (KINEXO - org1)
+2. Navigate to "My Tasks"
+3. Note projects visible
+4. Logout
+5. Login as `pricing@partnera.com` (Partner A - org2)
+6. Navigate to "My Tasks"
+7. Compare projects visible
+
+**Expected Results:**
+- ✅ `pricing@cscs.com` sees only KINEXO projects at KINEXO Pricing stage
+- ✅ `pricing@partnera.com` sees only Partner A projects at KINEXO Pricing stage
+- ✅ No cross-organization task visibility
+- ✅ Projects show correct organization
+
+### Test Case 4: Project Creation - Organization Inheritance
+
+**Objective:** Verify new projects inherit creator's organization
+
+**Steps:**
+1. Login as `cm@partnera.com` (Partner A - org2)
+2. Create a new project:
+   - Name: "Partner A Test Project"
+   - Description: "Test project for organization inheritance"
+   - Lifecycle Type: "New Item"
+3. Save project
+4. Verify project details show organization
+5. Logout
+6. Login as `cm@cscs.com` (KINEXO - org1)
+7. Verify the new project is NOT visible
+8. Logout
+9. Login as `admin@cscs.com` (Admin)
+10. Verify the new project IS visible with Partner A organization
+
+**Expected Results:**
+- ✅ New project inherits creator's organization (Partner A)
+- ✅ Project shows "Partner Organization A" badge
+- ✅ KINEXO users cannot see Partner A projects
+- ✅ Admin can see all projects including Partner A project
+- ✅ Organization is correctly assigned in database
+
+### Test Case 5: Cross-Organization Access Prevention
+
+**Objective:** Verify users cannot access projects from other organizations
+
+**Steps:**
+1. Login as `cm@partnera.com` (Partner A - org2)
+2. Note a KINEXO project ID from admin view (or use API)
+3. Try to access: `/projects/{kinexo-project-id}`
+4. Verify access is denied
+5. Try to update a KINEXO project via API (if possible)
+6. Verify update is rejected
+
+**Expected Results:**
+- ✅ Direct project access returns 403 Forbidden
+- ✅ API returns 403 Forbidden for cross-organization access
+- ✅ Clear error message about permission denied
+- ✅ Cannot view project details
+- ✅ Cannot modify projects from other organizations
+
+### Test Case 6: Organization Management (Admin Only)
+
+**Objective:** Verify Admin can manage organizations
+
+**Steps:**
+1. Login as `admin@cscs.com`
+2. Navigate to "Organization Management" (if UI exists)
+3. View all organizations:
+   - KINEXO Corporation
+   - Partner Organization A
+   - Partner Organization B
+4. Create a new organization:
+   - Name: "Test Organization C"
+   - Domain: "testorgc.com"
+5. Assign a user to the new organization
+6. Verify user can only see projects from assigned organization
+
+**Expected Results:**
+- ✅ Admin can view all organizations
+- ✅ Admin can create new organizations
+- ✅ Admin can assign users to organizations
+- ✅ Organization assignment affects project visibility
+- ✅ Only Admin can manage organizations
+
+### Test Case 7: No Organization Edge Case
+
+**Objective:** Verify handling of projects/users without organization
+
+**Steps:**
+1. Login as `cm@noorg.com` (No Organization)
+2. Navigate to "Projects" page
+3. Verify projects visible
+4. Create a new project
+5. Verify project shows "No Organization"
+6. Logout
+7. Login as `admin@cscs.com`
+8. Verify "No Organization" project is visible
+9. Assign organization to `cm@noorg.com`
+10. Verify project visibility changes
+
+**Expected Results:**
+- ✅ Users without organization can create projects
+- ✅ Projects show "No Organization" badge
+- ✅ Admin can see "No Organization" projects
+- ✅ Organization assignment updates project visibility
+- ✅ Edge case handled gracefully
+
+### Test Case 8: Dashboard Statistics - Organization Scoping
+
+**Objective:** Verify dashboard statistics respect organization boundaries
+
+**Steps:**
+1. Login as `cm@cscs.com` (KINEXO - org1)
+2. View Dashboard statistics:
+   - Total Projects
+   - Active Projects
+   - Pending Tasks
+3. Note the counts
+4. Logout
+5. Login as `cm@partnera.com` (Partner A - org2)
+6. View Dashboard statistics
+7. Compare counts
+
+**Expected Results:**
+- ✅ Dashboard shows only organization-scoped statistics
+- ✅ Project counts match organization's projects
+- ✅ Task counts match organization's tasks
+- ✅ Statistics are accurate per organization
+- ✅ Admin sees aggregated statistics across all organizations
+
+### Test Case 9: User Management - Organization Assignment
+
+**Objective:** Verify Admin can assign users to organizations
+
+**Steps:**
+1. Login as `admin@cscs.com`
+2. Navigate to "User Management"
+3. View user list with organization column
+4. Create a new user:
+   - Name: "Test User"
+   - Email: "testuser@test.com"
+   - Role: "Category Manager"
+   - Organization: Select "Partner Organization A"
+5. Save user
+6. Logout
+7. Login as new user
+8. Verify user sees only Partner A projects
+9. Create a project
+10. Verify project is assigned to Partner A
+
+**Expected Results:**
+- ✅ Admin can assign organization when creating user
+- ✅ User list shows organization column
+- ✅ New user inherits assigned organization
+- ✅ User can only see projects from assigned organization
+- ✅ Projects created by user inherit organization
+
+### Test Case 10: Multi-Tenant Workflow Testing
+
+**Objective:** Verify workflow operations respect organization boundaries
+
+**Steps:**
+1. Login as `cm@partnera.com` (Partner A - org2)
+2. Create a project and advance to "Freight Strategy" stage
+3. Logout
+4. Login as `logistics@cscs.com` (KINEXO - org1)
+5. Navigate to "My Tasks"
+6. Verify Partner A project does NOT appear
+7. Logout
+8. Login as `cm@partnera.com`
+9. Verify project is at "Freight Strategy" stage
+10. Note: Partner A doesn't have a Logistics user, so project stays at this stage
+
+**Expected Results:**
+- ✅ Workflow operations respect organization boundaries
+- ✅ Users can only advance projects from their organization
+- ✅ Cross-organization workflow operations are prevented
+- ✅ Projects remain accessible only within their organization
+- ✅ Workflow stages are correctly scoped to organization
 
 ---
 
@@ -184,13 +473,17 @@ After seeding, the following test projects are available:
 - ✅ User can access protected routes
 
 **Test with all roles:**
-- [ ] Admin login
-- [ ] Category Manager login
-- [ ] Pricing Specialist login
-- [ ] Logistics login
-- [ ] Strategic Supply Manager login
-- [ ] Supplier login
-- [ ] DC Operator login
+- [ ] Admin login (`admin@cscs.com`)
+- [ ] Category Manager login (`cm@cscs.com`)
+- [ ] Pricing Specialist login (`pricing@cscs.com`)
+- [ ] Logistics login (`logistics@cscs.com`)
+- [ ] Strategic Supply Manager login (`ssm@cscs.com`)
+- [ ] Supplier login (`supplier@cscs.com`)
+- [ ] DC Operator login (`dcoperator@cscs.com`)
+- [ ] Partner A Category Manager login (`cm@partnera.com`)
+- [ ] Partner A Pricing Specialist login (`pricing@partnera.com`)
+- [ ] Partner B Category Manager login (`cm@partnerb.com`)
+- [ ] No Organization Category Manager login (`cm@noorg.com`)
 
 ### Test Case 2: Invalid Credentials
 
@@ -1329,16 +1622,67 @@ After seeding, the following test projects are available:
 #### Test Case 3: Deleting Item Lifecycle
 
 **Steps:**
-1. Create project with "Deleting Item" lifecycle
+1. Use pre-seeded project: "KINEXO - Deleting Item Project" (Impact Analysis stage)
 2. Verify workflow stages:
    - Draft → Impact Analysis → SSM Review → DC Runout → Archive → Completed
-3. Test workflow progression
+3. Test workflow progression:
+   - Complete Impact Analysis (Category Manager)
+   - Review at SSM Review (Strategic Supply Manager)
+   - Complete DC Runout (DC Operator)
+   - Archive (Admin only)
+   - Complete
 
 **Expected Results:**
 - ✅ 6 workflow stages
 - ✅ Includes "Impact Analysis" stage
+- ✅ Includes "SSM Review" stage
+- ✅ Includes "DC Runout" stage
 - ✅ Includes "Archive" stage (Admin only)
 - ✅ Workflow progresses correctly
+- ✅ Pre-seeded projects available at different stages for testing
+
+#### Test Case 3a: Item Comparison Stage (Transitioning Item) - Using Seed Data
+
+**Steps:**
+1. Login as `cm@cscs.com` (Category Manager)
+2. Navigate to "My Tasks" or "Projects"
+3. Open "KINEXO - Transitioning Item Project" (Item Comparison stage)
+4. Review old item specifications vs new item specifications
+5. Document comparison:
+   - Item number changes
+   - Specification changes
+   - Category changes
+6. Add comparison notes
+7. Advance to next stage (Freight Strategy)
+
+**Expected Results:**
+- ✅ Can view old item vs new item side-by-side
+- ✅ Can document differences
+- ✅ Comparison data is saved
+- ✅ Workflow can advance after comparison complete
+- ✅ Category Manager role required for this stage
+- ✅ Pre-seeded project available for testing
+
+#### Test Case 3b: Archive Stage (Deleting Item) - Using Seed Data
+
+**Steps:**
+1. Login as `admin@cscs.com` (Admin)
+2. Navigate to "Projects"
+3. Open "KINEXO - Item Archive" project (Archive stage)
+4. Review all project data
+5. Archive the item:
+   - Mark item as archived
+   - Update system records
+   - Complete archival process
+6. Advance to Completed stage
+
+**Expected Results:**
+- ✅ Archive stage requires Admin role
+- ✅ Can archive item data
+- ✅ Archive process completes successfully
+- ✅ Project moves to Completed stage
+- ✅ Non-admin users cannot access Archive stage
+- ✅ Pre-seeded project available for testing
 
 ---
 
@@ -1638,6 +1982,31 @@ After seeding, the following test projects are available:
 - [ ] Permission matrix UI
 - [ ] Audit logging
 
+### Enterprise Features
+- [ ] Multi-tenant architecture
+- [ ] Organization creation and management
+- [ ] Organization-based data isolation
+- [ ] Event-driven lifecycle system
+- [ ] Event creation and processing
+- [ ] Event querying and filtering
+- [ ] Version history for items
+- [ ] Version history for projects
+- [ ] Version viewing and comparison
+- [ ] Version restore (if implemented)
+- [ ] Enhanced color-coded stages
+- [ ] Stage-specific color schemes
+- [ ] Role badges on stages
+- [ ] Role-specific dashboard widgets
+- [ ] Role-specific navigation
+- [ ] Role-specific analytics
+- [ ] Advanced dashboard charts
+- [ ] Trend analysis
+- [ ] Performance metrics
+- [ ] Interactive flow diagrams
+- [ ] Stage dependencies visualization
+- [ ] Full lifecycle overview
+- [ ] Gantt chart view (if implemented)
+
 ### Data Integrity
 - [ ] Data persistence
 - [ ] Data validation
@@ -1746,11 +2115,25 @@ Document any known limitations or issues discovered during testing.
 
 ### Test User Credentials
 - All passwords: `password123`
+
+**KINEXO Corporation (org1):**
 - Admin: `admin@cscs.com`
 - Category Manager: `cm@cscs.com`
 - Pricing Specialist: `pricing@cscs.com`
 - Logistics: `logistics@cscs.com`
 - Strategic Supply Manager: `ssm@cscs.com`
+- DC Operator: `dcoperator@cscs.com`
+
+**Partner Organization A (org2):**
+- Supplier: `supplier@cscs.com`
+- Category Manager: `cm@partnera.com`
+- Pricing Specialist: `pricing@partnera.com`
+
+**Partner Organization B (org3):**
+- Category Manager: `cm@partnerb.com`
+
+**No Organization:**
+- Category Manager: `cm@noorg.com`
 
 ### Key URLs
 - Frontend: http://localhost:5173
@@ -1818,6 +2201,54 @@ cd backend && npx prisma studio
    - ✅ Permission enforcement
    - ✅ Admin override
 
+### ✅ Enterprise Features Covered in This Guide
+
+1. **Multi-tenant Architecture**
+   - ✅ Organization creation and management
+   - ✅ Organization-based data isolation
+   - ✅ User-organization assignment
+   - ✅ Project-organization association
+   - ✅ Organization-scoped permissions
+
+2. **Event-driven Lifecycle System**
+   - ✅ Event creation on workflow changes
+   - ✅ Async event processing
+   - ✅ Event type tracking
+   - ✅ Event querying and filtering
+   - ✅ Event error handling
+
+3. **Version History**
+   - ✅ Item version creation
+   - ✅ Project version creation
+   - ✅ Version viewing
+   - ✅ Version comparison
+   - ✅ Version restore (if implemented)
+
+4. **Enhanced Color-coded Stages**
+   - ✅ Stage-specific colors
+   - ✅ Status indicators
+   - ✅ Role badges on stages
+   - ✅ Lifecycle-specific colors
+
+5. **Enhanced Role-aware Interfaces**
+   - ✅ Role-specific dashboard widgets
+   - ✅ Role-specific navigation
+   - ✅ Role-specific quick actions
+   - ✅ Role-specific analytics views
+
+6. **Advanced Dashboards and Insights**
+   - ✅ Analytics charts
+   - ✅ Trend analysis
+   - ✅ Performance metrics
+   - ✅ Role-specific insights
+
+7. **Full Lifecycle Visual Flows**
+   - ✅ Interactive flow diagrams
+   - ✅ Stage dependencies visualization
+   - ✅ Full lifecycle overview
+   - ✅ Gantt chart view (if implemented)
+   - ✅ Timeline view with dates
+
 ### Testing Coverage
 
 **Part 1 (Required) Features:**
@@ -1837,7 +2268,15 @@ cd backend && npx prisma studio
 - ✅ Permission matrix UI
 - ✅ User registration
 
-**Total Coverage: 100% of Part 1 + Part 2 Features**
+**Enterprise Features:**
+- ✅ Multi-tenant architecture
+- ✅ Event-driven lifecycle system
+- ✅ Version history tracking
+- ✅ Enhanced visualizations
+- ✅ Advanced analytics
+- ✅ Role-aware interfaces
+
+**Total Coverage: 100% of Part 1 + Part 2 + Enterprise Features**
 
 ---
 
@@ -1850,11 +2289,16 @@ cd backend && npx prisma studio
 - Use Prisma Studio to verify database state
 - Document any deviations from expected behavior
 - **Part 2 features are fully implemented and testable**
+- **Enterprise features are fully implemented and testable**
 - All lifecycle types are supported and can be tested
 - Notification and task systems are functional
+- Multi-tenant architecture is ready for testing
+- Event-driven system is operational
+- Version history is available for items and projects
+- Enhanced visualizations provide better user experience
 
 ---
 
 **Last Updated:** December 2024
-**Version:** 2.0 (Includes Part 2 Testing)
+**Version:** 3.1 (Includes Multi-Tenant Testing + Comprehensive Seed Data)
 

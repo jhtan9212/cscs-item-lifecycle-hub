@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { userService, type User, type CreateUserData } from '@/services/userService';
 import { roleService, type Role } from '@/services/roleService';
+import { organizationService, type Organization } from '@/services/organizationService';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +35,7 @@ export const UserManagement = () => {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -42,6 +44,7 @@ export const UserManagement = () => {
     email: '',
     password: '',
     roleId: '',
+    organizationId: '',
   });
 
   useEffect(() => {
@@ -51,12 +54,14 @@ export const UserManagement = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [usersData, rolesData] = await Promise.all([
+      const [usersData, rolesData, orgsData] = await Promise.all([
         userService.getAll(),
         roleService.getAll(),
+        currentUser?.role.isAdmin ? organizationService.getAll() : Promise.resolve([]),
       ]);
       setUsers(usersData);
       setRoles(rolesData);
+      setOrganizations(orgsData);
     } catch (err: any) {
       const errorMessage = getErrorMessage(err);
       toast({
@@ -93,7 +98,7 @@ export const UserManagement = () => {
     try {
       await userService.create(formData);
       setShowCreateForm(false);
-      setFormData({ name: '', email: '', password: '', roleId: '' });
+      setFormData({ name: '', email: '', password: '', roleId: '', organizationId: '' });
       await loadData();
       toast({
         title: 'Success',
@@ -246,6 +251,27 @@ export const UserManagement = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                {currentUser?.role.isAdmin && organizations.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="organization">Organization (Optional)</Label>
+                    <Select
+                      value={formData.organizationId || '__none__'}
+                      onValueChange={(value) => setFormData({ ...formData, organizationId: value === '__none__' ? undefined : value })}
+                    >
+                      <SelectTrigger id="organization">
+                        <SelectValue placeholder="Select an organization (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">No Organization</SelectItem>
+                        {organizations.map((org) => (
+                          <SelectItem key={org.id} value={org.id}>
+                            {org.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <div className="flex justify-end space-x-4 pt-4">
                 <Button type="button" variant="outline" onClick={() => setShowCreateForm(false)}>
@@ -269,6 +295,11 @@ export const UserManagement = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Role
                 </th>
+                {currentUser?.role.isAdmin && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Organization
+                  </th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Status
                 </th>
@@ -301,6 +332,15 @@ export const UserManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Badge variant="secondary">{user.role.name}</Badge>
                   </td>
+                  {currentUser?.role.isAdmin && (
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {user.organization ? (
+                        <Badge variant="outline">{user.organization.name}</Badge>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </td>
+                  )}
                   <td className="px-6 py-4 whitespace-nowrap">
                     {user.isActive ? (
                       <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
@@ -366,21 +406,30 @@ export const UserManagement = () => {
 interface UserEditFormProps {
   user: User;
   roles: Role[];
-  onSave: (updates: Partial<User>) => void;
+  onSave: (updates: Partial<User> & { organizationId?: string }) => void;
   onCancel: () => void;
 }
 
 const UserEditForm = ({ user, roles, onSave, onCancel }: UserEditFormProps) => {
+  const { user: currentUser } = useAuth();
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [roleId, setRoleId] = useState(user.roleId);
+  const [organizationId, setOrganizationId] = useState(user.organizationId || '');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (currentUser?.role.isAdmin) {
+      organizationService.getAll().then(setOrganizations).catch(() => {});
+    }
+  }, [currentUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      await onSave({ name, email, roleId });
+      await onSave({ name, email, roleId, organizationId: organizationId || undefined });
     } finally {
       setSaving(false);
     }
@@ -416,6 +465,25 @@ const UserEditForm = ({ user, roles, onSave, onCancel }: UserEditFormProps) => {
           ))}
         </SelectContent>
       </Select>
+      {currentUser?.role.isAdmin && organizations.length > 0 && (
+        <Select 
+          value={organizationId || '__none__'} 
+          onValueChange={(value) => setOrganizationId(value === '__none__' ? '' : value)} 
+          disabled={saving}
+        >
+          <SelectTrigger className="h-8 w-40 text-sm">
+            <SelectValue placeholder="Org" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none__">No Org</SelectItem>
+            {organizations.map((org) => (
+              <SelectItem key={org.id} value={org.id}>
+                {org.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
       <Button type="submit" size="sm" disabled={saving}>
         {saving ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

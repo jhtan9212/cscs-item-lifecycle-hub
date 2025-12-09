@@ -31,11 +31,19 @@ export const MyTasks = () => {
       setProjects(data);
     } catch (err: any) {
       const errorMessage = getErrorMessage(err);
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      if (err.response?.status === 403) {
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have permission to view assigned projects. Please contact your administrator.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }

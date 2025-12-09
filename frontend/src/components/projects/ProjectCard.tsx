@@ -4,6 +4,7 @@ import { formatDate } from '@/utils/formatters';
 import { PROJECT_STATUS } from '@/utils/constants';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Building2 } from 'lucide-react';
 
 interface ProjectCardProps {
   project: Project;
@@ -43,6 +44,11 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
               <span className="font-medium">Stage:</span> {project.currentStage}
             </div>
             <div className="text-muted-foreground">{formatDate(project.createdAt)}</div>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t">
+            <Building2 className="h-4 w-4" />
+            <span>{project.organization?.name || 'No Organization'}</span>
           </div>
 
           {project.items && project.items.length > 0 && (

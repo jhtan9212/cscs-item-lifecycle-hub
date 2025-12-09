@@ -272,6 +272,10 @@ export const ProjectDetail = () => {
                   <p className="text-sm text-muted-foreground mb-1">Current Stage</p>
                   <Badge>{project.currentStage}</Badge>
                 </div>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Organization</p>
+                  <p className="font-medium">{project.organization?.name || 'No Organization'}</p>
+                </div>
               </div>
               {project.description && (
                 <div className="mt-6 pt-6 border-t">

@@ -28,6 +28,7 @@ import {
   FileText,
   CheckSquare,
   Bell,
+  Building2,
 } from 'lucide-react';
 
 interface AppLayoutProps {
@@ -49,6 +50,7 @@ const adminNavigation = [
     permission: 'MANAGE_PERMISSIONS',
   },
   { name: 'User Management', href: '/user-management', icon: Users, permission: 'MANAGE_USERS' },
+  { name: 'Organization Management', href: '/organization-management', icon: Building2, requireAdmin: true },
   { name: 'Audit Logs', href: '/audit-logs', icon: FileText, permission: 'VIEW_AUDIT_LOGS' },
 ];
 
@@ -108,14 +110,19 @@ export function AppLayout({ children }: AppLayoutProps) {
           );
         })}
 
-        {adminNavigation.some((item) => hasPermission(item.permission)) && (
+        {adminNavigation.some((item) => 
+          (item.requireAdmin && user?.role.isAdmin) || 
+          (item.permission && hasPermission(item.permission))
+        ) && (
           <>
             <Separator className="my-4" />
             <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Administration
             </div>
             {adminNavigation.map((item) => {
-              if (!hasPermission(item.permission)) return null;
+              // Check permission or admin requirement
+              if (item.requireAdmin && !user?.role.isAdmin) return null;
+              if (item.permission && !hasPermission(item.permission)) return null;
               const Icon = item.icon;
               return (
                 <Link

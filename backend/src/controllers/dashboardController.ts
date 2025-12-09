@@ -14,14 +14,27 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
     // Get user info first (needed for multiple queries)
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { role: true },
+      include: { role: true, organization: true },
     });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Get project statistics
+    // Build organization filter - Admin sees all, others see only their org
+    const orgFilter: any = {};
+    if (!user.role.isAdmin) {
+      // Non-admin users see only their organization's projects
+      // If user has no organization, they see projects with no organization
+      if (user.organizationId) {
+        orgFilter.organizationId = user.organizationId;
+      } else {
+        // User without organization sees projects without organization
+        orgFilter.organizationId = null;
+      }
+    }
+
+    // Get project statistics (filtered by organization)
     const [
       totalProjects,
       activeProjects,
@@ -31,16 +44,22 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
       projectsByLifecycle,
       recentProjects,
     ] = await Promise.all([
-      prisma.project.count(),
-      prisma.project.count({ where: { status: 'IN_PROGRESS' } }),
-      prisma.project.count({ where: { status: 'COMPLETED' } }),
-      prisma.item.count(),
+      prisma.project.count({ where: orgFilter }),
+      prisma.project.count({ where: { ...orgFilter, status: 'IN_PROGRESS' } }),
+      prisma.project.count({ where: { ...orgFilter, status: 'COMPLETED' } }),
+      prisma.item.count({
+        where: {
+          project: orgFilter,
+        },
+      }),
       prisma.project.groupBy({
         by: ['status'],
+        where: orgFilter,
         _count: true,
       }),
       prisma.project.groupBy({
         by: ['lifecycleType'],
+        where: orgFilter,
         _count: true,
       }),
       // Get user-specific recent projects (projects user has worked on or is assigned to)
@@ -48,12 +67,14 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
         if (user.role.isAdmin) {
           // Admin sees all projects sorted by most recently updated
           return await prisma.project.findMany({
+            where: orgFilter, // Still respect organization filter for admin if needed
             take: 5,
             orderBy: { updatedAt: 'desc' },
             include: {
               createdBy: {
                 include: { role: true },
               },
+              organization: true,
               _count: {
                 select: { items: true },
               },
@@ -64,6 +85,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
         // Get projects user created or projects at stages requiring user's role
         const roleName = user.role.name;
         let whereClause: any = {
+          ...orgFilter, // Apply organization filter
           OR: [
             { createdById: userId },
             {
@@ -80,6 +102,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
         // Special handling for Supplier
         if (roleName === 'Supplier') {
           whereClause = {
+            ...orgFilter, // Apply organization filter
             OR: [
               { createdById: userId },
               {
@@ -97,6 +120,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
         // Special handling for DC Operator
         else if (roleName === 'DC Operator') {
           whereClause = {
+            ...orgFilter, // Apply organization filter
             OR: [
               { createdById: userId },
               {
@@ -124,6 +148,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
             createdBy: {
               include: { role: true },
             },
+            organization: true,
             _count: {
               select: { items: true },
             },
@@ -145,16 +170,30 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<Re
 
         if (!userForTasks) return [];
 
-        // Admin sees all non-completed projects
+        // Build organization filter
+        const orgFilterForTasks: any = {};
+        if (!userForTasks.role.isAdmin) {
+          // Non-admin users see only their organization's projects
+          // If user has no organization, they see projects with no organization
+          if (userForTasks.organizationId) {
+            orgFilterForTasks.organizationId = userForTasks.organizationId;
+          } else {
+            // User without organization sees projects without organization
+            orgFilterForTasks.organizationId = null;
+          }
+        }
+
+        // Admin sees all non-completed projects (within their org scope if applicable)
         if (userForTasks.role.isAdmin) {
           return await prisma.project.findMany({
-            where: { status: { not: 'COMPLETED' } },
+            where: { ...orgFilterForTasks, status: { not: 'COMPLETED' } },
             select: { id: true },
           });
         }
 
         const roleName = userForTasks.role.name;
         let whereClause: any = {
+          ...orgFilterForTasks, // Apply organization filter
           status: { not: 'COMPLETED' },
         };
 

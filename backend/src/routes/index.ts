@@ -9,6 +9,7 @@ import notificationsRouter from './notifications';
 import tasksRouter from './tasks';
 import dashboardRouter from './dashboard';
 import auditLogsRouter from './auditLogs';
+import organizationsRouter from './organizations';
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.use('/notifications', notificationsRouter);
 router.use('/tasks', tasksRouter);
 router.use('/dashboard', dashboardRouter);
 router.use('/audit-logs', auditLogsRouter);
+router.use('/organizations', organizationsRouter);
 
 export default router;
 

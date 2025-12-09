@@ -20,6 +20,12 @@ export interface Project {
   status: ProjectStatus;
   currentStage: string;
   createdById: string;
+  organizationId?: string | null;
+  organization?: {
+    id: string;
+    name: string;
+    domain?: string | null;
+  } | null;
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
