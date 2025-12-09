@@ -49,6 +49,13 @@ export const Header: FC = () => {
                     </Button>
                   </Link>
                 )}
+                {hasPermission('VIEW_AUDIT_LOGS') && (
+                  <Link to="/audit-logs">
+                    <Button variant="outline" size="sm">
+                      Audit Logs
+                    </Button>
+                  </Link>
+                )}
                 <NotificationBell />
                 <div className="text-sm text-gray-600">
                   <span className="font-medium">{user.name}</span>

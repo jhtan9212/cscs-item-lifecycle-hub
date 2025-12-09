@@ -8,6 +8,7 @@ import rolesRouter from './roles';
 import notificationsRouter from './notifications';
 import tasksRouter from './tasks';
 import dashboardRouter from './dashboard';
+import auditLogsRouter from './auditLogs';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use('/roles', rolesRouter);
 router.use('/notifications', notificationsRouter);
 router.use('/tasks', tasksRouter);
 router.use('/dashboard', dashboardRouter);
+router.use('/audit-logs', auditLogsRouter);
 
 export default router;
 

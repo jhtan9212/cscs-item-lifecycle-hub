@@ -10,6 +10,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { RoleManagement } from './pages/RoleManagement';
 import { UserManagement } from './pages/UserManagement';
+import { AuditLogs } from './pages/AuditLogs';
 import { MyTasks } from './pages/MyTasks';
 import { PricingWorkflow } from './pages/PricingWorkflow';
 import { LogisticsWorkflow } from './pages/LogisticsWorkflow';
@@ -52,6 +53,14 @@ function App() {
                       element={
                         <ProtectedRoute requiredPermission="MANAGE_USERS">
                           <UserManagement />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/audit-logs"
+                      element={
+                        <ProtectedRoute requiredPermission="VIEW_AUDIT_LOGS">
+                          <AuditLogs />
                         </ProtectedRoute>
                       }
                     />
