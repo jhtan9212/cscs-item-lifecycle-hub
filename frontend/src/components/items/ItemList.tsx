@@ -1,5 +1,5 @@
-import React from 'react';
-import { Item } from '../../types/item';
+import type { FC } from 'react';
+import type { Item } from '../../types/item';
 import { Button } from '../common/Button';
 
 interface ItemListProps {
@@ -9,7 +9,7 @@ interface ItemListProps {
   onCreateNew: () => void;
 }
 
-export const ItemList: React.FC<ItemListProps> = ({ items, onEdit, onDelete, onCreateNew }) => {
+export const ItemList: FC<ItemListProps> = ({ items, onEdit, onDelete, onCreateNew }) => {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">

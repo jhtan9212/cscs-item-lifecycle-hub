@@ -1,6 +1,6 @@
-import React from 'react';
+import type { FC } from 'react';
 import { Link } from 'react-router-dom';
-import { Project } from '../../types/project';
+import type { Project } from '../../types/project';
 import { formatDate } from '../../utils/formatters';
 import { PROJECT_STATUS } from '../../utils/constants';
 
@@ -8,7 +8,7 @@ interface ProjectCardProps {
   project: Project;
 }
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+export const ProjectCard: FC<ProjectCardProps> = ({ project }) => {
   const statusColors: Record<string, string> = {
     DRAFT: 'bg-gray-100 text-gray-800',
     IN_PROGRESS: 'bg-blue-100 text-blue-800',

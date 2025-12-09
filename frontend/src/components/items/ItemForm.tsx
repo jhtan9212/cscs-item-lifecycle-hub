@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Item } from '../../types/item';
+import { useState } from 'react';
+import type { FC } from 'react';
+import type { Item } from '../../types/item';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { FieldOwnershipLabel } from './FieldOwnershipLabel';
@@ -12,7 +13,7 @@ interface ItemFormProps {
   onCancel: () => void;
 }
 
-export const ItemForm: React.FC<ItemFormProps> = ({ item, projectId, onSubmit, onCancel }) => {
+export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState<Partial<Item>>({
     name: item?.name || '',
     description: item?.description || '',

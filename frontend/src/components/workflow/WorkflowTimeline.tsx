@@ -1,12 +1,12 @@
-import React from 'react';
-import { WorkflowStep, StepStatus } from '../../types/project';
+import type { FC } from 'react';
+import type { WorkflowStep } from '../../types/project';
 
 interface WorkflowTimelineProps {
   steps: WorkflowStep[];
   currentStage: string;
 }
 
-export const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({ steps, currentStage }) => {
+export const WorkflowTimeline: FC<WorkflowTimelineProps> = ({ steps, currentStage }) => {
   const getStepStatus = (step: WorkflowStep): 'completed' | 'current' | 'pending' => {
     if (step.status === 'COMPLETED') return 'completed';
     if (step.stepName === currentStage || step.status === 'IN_PROGRESS') return 'current';

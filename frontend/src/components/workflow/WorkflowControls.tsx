@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { FC } from 'react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 
@@ -11,8 +12,7 @@ interface WorkflowControlsProps {
   onMoveBack: (comment?: string) => Promise<void>;
 }
 
-export const WorkflowControls: React.FC<WorkflowControlsProps> = ({
-  projectId,
+export const WorkflowControls: FC<WorkflowControlsProps> = ({
   currentStage,
   canAdvance,
   canMoveBack,

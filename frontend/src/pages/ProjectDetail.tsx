@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { FC } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Project, Item } from '../types/project';
+import type { Project } from '../types/project';
+import type { Item } from '../types/item';
 import { projectService } from '../services/projectService';
 import { itemService } from '../services/itemService';
 import { WorkflowTimeline } from '../components/workflow/WorkflowTimeline';
@@ -11,7 +13,7 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { Button } from '../components/common/Button';
 import { formatDate } from '../utils/formatters';
 
-export const ProjectDetail: React.FC = () => {
+export const ProjectDetail: FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [project, setProject] = useState<Project | null>(null);

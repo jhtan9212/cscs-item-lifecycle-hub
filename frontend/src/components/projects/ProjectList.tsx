@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Project } from '../../types/project';
+import { useState, useEffect } from 'react';
+import type { FC } from 'react';
+import type { Project } from '../../types/project';
 import { projectService } from '../../services/projectService';
 import { ProjectCard } from './ProjectCard';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { Button } from '../common/Button';
 import { useNavigate } from 'react-router-dom';
 
-export const ProjectList: React.FC = () => {
+export const ProjectList: FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

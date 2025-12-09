@@ -1,12 +1,12 @@
-import React from 'react';
+import type { FC, ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
 
   return (

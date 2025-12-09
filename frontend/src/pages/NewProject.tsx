@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import type { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { projectService } from '../services/projectService';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 
-export const NewProject: React.FC = () => {
+export const NewProject: FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',

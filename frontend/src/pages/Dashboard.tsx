@@ -1,8 +1,8 @@
-import React from 'react';
+import type { FC } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/common/Button';
 
-export const Dashboard: React.FC = () => {
+export const Dashboard: FC = () => {
   return (
     <div>
       <div className="mb-8">

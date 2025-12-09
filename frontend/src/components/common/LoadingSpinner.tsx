@@ -1,6 +1,6 @@
-import React from 'react';
+import type { FC } from 'react';
 
-export const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
+export const LoadingSpinner: FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
   const sizes = {
     sm: 'w-4 h-4',
     md: 'w-8 h-8',

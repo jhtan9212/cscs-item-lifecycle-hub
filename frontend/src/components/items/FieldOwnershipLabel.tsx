@@ -1,4 +1,4 @@
-import React from 'react';
+import type { FC } from 'react';
 import { FIELD_OWNERSHIP } from '../../utils/constants';
 
 interface FieldOwnershipLabelProps {
@@ -6,7 +6,7 @@ interface FieldOwnershipLabelProps {
   community?: string;
 }
 
-export const FieldOwnershipLabel: React.FC<FieldOwnershipLabelProps> = ({ owner, community }) => {
+export const FieldOwnershipLabel: FC<FieldOwnershipLabelProps> = ({ owner, community }) => {
   const ownershipInfo = Object.values(FIELD_OWNERSHIP).find(
     (info) => info.owner === owner
   );
