@@ -54,7 +54,9 @@ export const createItem = async (req: Request, res: Response) => {
       supplierPrice,
       kinexoPrice,
       freightStrategy,
+      freightBrackets,
       supplierItemNumber,
+      supplierSpecs,
       ownedByCategoryManager,
       ownedByStrategicSupply,
       ownedByPricingSpecialist,
@@ -65,6 +67,53 @@ export const createItem = async (req: Request, res: Response) => {
 
     if (!name) {
       return res.status(400).json({ error: 'Item name is required' });
+    }
+
+    // Validate price fields
+    if (supplierPrice !== undefined && supplierPrice !== null) {
+      const price = parseFloat(supplierPrice);
+      if (isNaN(price) || price < 0) {
+        return res.status(400).json({ error: 'Supplier price must be a positive number' });
+      }
+    }
+    if (kinexoPrice !== undefined && kinexoPrice !== null) {
+      const price = parseFloat(kinexoPrice);
+      if (isNaN(price) || price < 0) {
+        return res.status(400).json({ error: 'KINEXO price must be a positive number' });
+      }
+    }
+
+    // Validate JSON fields
+    let validatedFreightBrackets = null;
+    if (freightBrackets) {
+      try {
+        validatedFreightBrackets = typeof freightBrackets === 'string' 
+          ? JSON.parse(freightBrackets) 
+          : freightBrackets;
+        // Ensure it's a valid object
+        if (typeof validatedFreightBrackets !== 'object' || Array.isArray(validatedFreightBrackets)) {
+          return res.status(400).json({ error: 'Freight brackets must be a valid JSON object' });
+        }
+        validatedFreightBrackets = JSON.stringify(validatedFreightBrackets);
+      } catch (error) {
+        return res.status(400).json({ error: 'Invalid JSON format for freight brackets' });
+      }
+    }
+
+    let validatedSupplierSpecs = null;
+    if (supplierSpecs) {
+      try {
+        validatedSupplierSpecs = typeof supplierSpecs === 'string' 
+          ? JSON.parse(supplierSpecs) 
+          : supplierSpecs;
+        // Ensure it's a valid object
+        if (typeof validatedSupplierSpecs !== 'object' || Array.isArray(validatedSupplierSpecs)) {
+          return res.status(400).json({ error: 'Supplier specifications must be a valid JSON object' });
+        }
+        validatedSupplierSpecs = JSON.stringify(validatedSupplierSpecs);
+      } catch (error) {
+        return res.status(400).json({ error: 'Invalid JSON format for supplier specifications' });
+      }
     }
 
     // Verify project exists
@@ -90,7 +139,9 @@ export const createItem = async (req: Request, res: Response) => {
         supplierPrice: supplierPrice ? parseFloat(supplierPrice) : null,
         kinexoPrice: kinexoPrice ? parseFloat(kinexoPrice) : null,
         freightStrategy,
+        freightBrackets: validatedFreightBrackets,
         supplierItemNumber,
+        supplierSpecs: validatedSupplierSpecs,
         ownedByCategoryManager: ownedByCategoryManager ?? false,
         ownedByStrategicSupply: ownedByStrategicSupply ?? false,
         ownedByPricingSpecialist: ownedByPricingSpecialist ?? false,
@@ -133,12 +184,62 @@ export const updateItem = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Item not found' });
     }
 
-    // Convert price strings to floats if provided
-    if (updateData.supplierPrice !== undefined) {
-      updateData.supplierPrice = updateData.supplierPrice ? parseFloat(updateData.supplierPrice) : null;
+    // Validate and convert price fields
+    if (updateData.supplierPrice !== undefined && updateData.supplierPrice !== null) {
+      const price = parseFloat(updateData.supplierPrice);
+      if (isNaN(price) || price < 0) {
+        return res.status(400).json({ error: 'Supplier price must be a positive number' });
+      }
+      updateData.supplierPrice = price;
+    } else if (updateData.supplierPrice === null) {
+      updateData.supplierPrice = null;
     }
-    if (updateData.kinexoPrice !== undefined) {
-      updateData.kinexoPrice = updateData.kinexoPrice ? parseFloat(updateData.kinexoPrice) : null;
+
+    if (updateData.kinexoPrice !== undefined && updateData.kinexoPrice !== null) {
+      const price = parseFloat(updateData.kinexoPrice);
+      if (isNaN(price) || price < 0) {
+        return res.status(400).json({ error: 'KINEXO price must be a positive number' });
+      }
+      updateData.kinexoPrice = price;
+    } else if (updateData.kinexoPrice === null) {
+      updateData.kinexoPrice = null;
+    }
+
+    // Validate JSON fields
+    if (updateData.freightBrackets !== undefined) {
+      if (updateData.freightBrackets === null || updateData.freightBrackets === '') {
+        updateData.freightBrackets = null;
+      } else {
+        try {
+          const parsed = typeof updateData.freightBrackets === 'string' 
+            ? JSON.parse(updateData.freightBrackets) 
+            : updateData.freightBrackets;
+          if (typeof parsed !== 'object' || Array.isArray(parsed)) {
+            return res.status(400).json({ error: 'Freight brackets must be a valid JSON object' });
+          }
+          updateData.freightBrackets = JSON.stringify(parsed);
+        } catch (error) {
+          return res.status(400).json({ error: 'Invalid JSON format for freight brackets' });
+        }
+      }
+    }
+
+    if (updateData.supplierSpecs !== undefined) {
+      if (updateData.supplierSpecs === null || updateData.supplierSpecs === '') {
+        updateData.supplierSpecs = null;
+      } else {
+        try {
+          const parsed = typeof updateData.supplierSpecs === 'string' 
+            ? JSON.parse(updateData.supplierSpecs) 
+            : updateData.supplierSpecs;
+          if (typeof parsed !== 'object' || Array.isArray(parsed)) {
+            return res.status(400).json({ error: 'Supplier specifications must be a valid JSON object' });
+          }
+          updateData.supplierSpecs = JSON.stringify(parsed);
+        } catch (error) {
+          return res.status(400).json({ error: 'Invalid JSON format for supplier specifications' });
+        }
+      }
     }
 
     const updatedItem = await prisma.item.update({

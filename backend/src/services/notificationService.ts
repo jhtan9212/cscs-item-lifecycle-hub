@@ -116,6 +116,19 @@ export class NotificationService {
       },
       take: limit,
       skip: offset,
+      select: {
+        id: true,
+        userId: true,
+        type: true,
+        title: true,
+        message: true,
+        read: true,
+        readAt: true,
+        relatedProjectId: true,
+        relatedEntityType: true,
+        relatedEntityId: true,
+        createdAt: true,
+      },
     });
   }
 }

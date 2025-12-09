@@ -18,7 +18,15 @@ export const getUserNotifications = async (req: Request, res: Response) => {
       }
     );
 
-    res.json(notifications);
+    // Map 'read' field to 'isRead' for frontend compatibility
+    // Also ensure title field is present (use message if title is missing for backward compatibility)
+    const mappedNotifications = notifications.map(n => ({
+      ...n,
+      isRead: n.read,
+      title: n.title || n.message.substring(0, 50), // Fallback to message if title missing
+    }));
+
+    res.json(mappedNotifications);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

@@ -122,9 +122,10 @@ export const Notifications: FC = () => {
                   handleMarkAsRead(notification.id);
                 }
                 // Navigate to related entity if available
-                if (notification.type === 'WORKFLOW_ADVANCED' || notification.type === 'TASK_ASSIGNED') {
-                  // Extract project ID from message or use notification metadata
-                  // For now, navigate to projects list
+                if (notification.relatedProjectId) {
+                  navigate(`/projects/${notification.relatedProjectId}`);
+                } else if (notification.type === 'STAGE_CHANGE' || notification.type === 'APPROVAL_REQUEST' || 
+                           notification.type === 'WORKFLOW_ADVANCED' || notification.type === 'TASK_ASSIGNED') {
                   navigate('/projects');
                 }
               }}
@@ -133,11 +134,14 @@ export const Notifications: FC = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-gray-900">
-                      {notification.type === 'WORKFLOW_ADVANCED' && 'Workflow Updated'}
-                      {notification.type === 'TASK_ASSIGNED' && 'Task Assigned'}
-                      {notification.type === 'PROJECT_CREATED' && 'Project Created'}
-                      {notification.type === 'ITEM_UPDATED' && 'Item Updated'}
-                      {!['WORKFLOW_ADVANCED', 'TASK_ASSIGNED', 'PROJECT_CREATED', 'ITEM_UPDATED'].includes(notification.type) && 'Notification'}
+                      {notification.title || 
+                        (notification.type === 'STAGE_CHANGE' && 'Workflow Stage Advanced') ||
+                        (notification.type === 'APPROVAL_REQUEST' && 'Action Required') ||
+                        (notification.type === 'WORKFLOW_ADVANCED' && 'Workflow Updated') ||
+                        (notification.type === 'TASK_ASSIGNED' && 'Task Assigned') ||
+                        (notification.type === 'PROJECT_CREATED' && 'Project Created') ||
+                        (notification.type === 'ITEM_UPDATED' && 'Item Updated') ||
+                        'Notification'}
                     </h3>
                     {!notification.isRead && (
                       <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">

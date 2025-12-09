@@ -20,8 +20,12 @@ export const getComments = async (req: Request, res: Response) => {
 
 export const createComment = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const { projectId } = req.params;
-    const { content, userId, userName, isInternal } = req.body;
+    const { content, isInternal } = req.body;
 
     if (!content) {
       return res.status(400).json({ error: 'Comment content is required' });
@@ -36,21 +40,17 @@ export const createComment = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    // Use provided userId or default
-    let actualUserId = userId;
-    let actualUserName = userName;
+    // Get user from authenticated request
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+    });
 
-    if (!actualUserId || !actualUserName) {
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          role: {
-            isAdmin: true,
-          },
-        },
-      });
-      actualUserId = adminUser?.id || 'system';
-      actualUserName = adminUser?.name || 'System';
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
+
+    const actualUserId = user.id;
+    const actualUserName = user.name;
 
     const comment = await prisma.comment.create({
       data: {
