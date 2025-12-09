@@ -272,7 +272,8 @@ async function main() {
     'VIEW_ALL_PROJECTS',
     'SUBMIT_FREIGHT_STRATEGY', 'VIEW_FREIGHT_STRATEGY',
     'VIEW_PRICING',
-    'ADVANCE_WORKFLOW' // Required to advance workflow after submitting freight strategy
+    'ADVANCE_WORKFLOW', // Required to advance workflow after submitting freight strategy
+    'MOVE_BACK_WORKFLOW' // Required to move back workflow if needed
   ];
   for (const permName of logisticsPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
