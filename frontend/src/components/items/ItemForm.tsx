@@ -5,6 +5,7 @@ import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { FieldOwnershipLabel } from './FieldOwnershipLabel';
 import { FIELD_OWNERSHIP } from '../../utils/constants';
+import { useAuth } from '../../context/AuthContext';
 
 interface ItemFormProps {
   item?: Item;
@@ -14,6 +15,10 @@ interface ItemFormProps {
 }
 
 export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
+  const { user } = useAuth();
+  const userRole = user?.role?.name || '';
+  const isSupplier = userRole === 'Supplier';
+  
   const [formData, setFormData] = useState<Partial<Item>>({
     name: item?.name || '',
     description: item?.description || '',
@@ -44,7 +49,19 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
     e.preventDefault();
     try {
       setLoading(true);
-      await onSubmit(formData);
+      
+      // For suppliers, only submit supplier-specific fields
+      if (isSupplier) {
+        const supplierData: Partial<Item> = {
+          supplierItemNumber: formData.supplierItemNumber,
+          supplierPrice: formData.supplierPrice,
+          supplierSpecs: formData.supplierSpecs,
+        };
+        await onSubmit(supplierData);
+      } else {
+        // For other roles, submit all form data
+        await onSubmit(formData);
+      }
     } catch (error) {
       console.error('Failed to save item:', error);
     } finally {
@@ -54,129 +71,139 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-        <div className="space-y-4">
-          <Input
-            label="Item Name *"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
-          <Input
-            label="Description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          />
-          <Input
-            label="Category"
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          />
-        </div>
-      </div>
-
-      {/* Category Manager Fields */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <FieldOwnershipLabel owner={FIELD_OWNERSHIP.CATEGORY_MANAGER.owner} />
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Manager Fields</h3>
-        <div className="space-y-4">
-          <Input
-            label="CM Item Number"
-            value={formData.cmItemNumber}
-            onChange={(e) => setFormData({ ...formData, cmItemNumber: e.target.value })}
-          />
-          <Input
-            label="CM Description"
-            value={formData.cmDescription}
-            onChange={(e) => setFormData({ ...formData, cmDescription: e.target.value })}
-          />
-          <Input
-            label="CM Category"
-            value={formData.cmCategory}
-            onChange={(e) => setFormData({ ...formData, cmCategory: e.target.value })}
-          />
-        </div>
-      </div>
-
-      {/* Strategic Supply Fields */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <FieldOwnershipLabel owner={FIELD_OWNERSHIP.STRATEGIC_SUPPLY.owner} />
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Strategic Supply Fields</h3>
-        <div className="space-y-4">
-          <Input
-            label="Supplier"
-            value={formData.ssSupplier}
-            onChange={(e) => setFormData({ ...formData, ssSupplier: e.target.value })}
-          />
-        </div>
-      </div>
-
-      {/* Pricing Specialist Fields */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <FieldOwnershipLabel owner={FIELD_OWNERSHIP.PRICING_SPECIALIST.owner} />
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing Fields</h3>
-        <div className="space-y-4">
-          <Input
-            label="Supplier Price"
-            type="number"
-            step="0.01"
-            value={formData.supplierPrice || ''}
-            onChange={(e) =>
-              setFormData({ ...formData, supplierPrice: parseFloat(e.target.value) || undefined })
-            }
-          />
-          <Input
-            label="KINEXO Price"
-            type="number"
-            step="0.01"
-            value={formData.kinexoPrice || ''}
-            onChange={(e) =>
-              setFormData({ ...formData, kinexoPrice: parseFloat(e.target.value) || undefined })
-            }
-          />
-        </div>
-      </div>
-
-      {/* Logistics Fields */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <FieldOwnershipLabel owner={FIELD_OWNERSHIP.LOGISTICS.owner} />
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Logistics Fields</h3>
-        <div className="space-y-4">
-          <Input
-            label="Freight Strategy"
-            value={formData.freightStrategy || ''}
-            onChange={(e) => setFormData({ ...formData, freightStrategy: e.target.value })}
-          />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Freight Brackets (JSON)
-            </label>
-            <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows={4}
-              value={
-                typeof formData.freightBrackets === 'string'
-                  ? formData.freightBrackets
-                  : formData.freightBrackets
-                    ? JSON.stringify(formData.freightBrackets, null, 2)
-                    : ''
-              }
-              onChange={(e) => {
-                try {
-                  const parsed = e.target.value ? JSON.parse(e.target.value) : null;
-                  setFormData({ ...formData, freightBrackets: parsed });
-                } catch {
-                  setFormData({ ...formData, freightBrackets: e.target.value as any });
-                }
-              }}
-              placeholder='{"zone1": 10.00, "zone2": 15.00, "zone3": 20.00}'
+      {/* Basic Information - Show for all roles except Supplier */}
+      {!isSupplier && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+          <div className="space-y-4">
+            <Input
+              label="Item Name *"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
             />
-            <p className="text-xs text-gray-500 mt-1">Enter valid JSON format</p>
+            <Input
+              label="Description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            />
+            <Input
+              label="Category"
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            />
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Category Manager Fields - Hide for Supplier */}
+      {!isSupplier && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <FieldOwnershipLabel owner={FIELD_OWNERSHIP.CATEGORY_MANAGER.owner} />
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Manager Fields</h3>
+          <div className="space-y-4">
+            <Input
+              label="CM Item Number"
+              value={formData.cmItemNumber}
+              onChange={(e) => setFormData({ ...formData, cmItemNumber: e.target.value })}
+            />
+            <Input
+              label="CM Description"
+              value={formData.cmDescription}
+              onChange={(e) => setFormData({ ...formData, cmDescription: e.target.value })}
+            />
+            <Input
+              label="CM Category"
+              value={formData.cmCategory}
+              onChange={(e) => setFormData({ ...formData, cmCategory: e.target.value })}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Strategic Supply Fields - Hide for Supplier */}
+      {!isSupplier && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <FieldOwnershipLabel owner={FIELD_OWNERSHIP.STRATEGIC_SUPPLY.owner} />
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Strategic Supply Fields</h3>
+          <div className="space-y-4">
+            <Input
+              label="Supplier"
+              value={formData.ssSupplier}
+              onChange={(e) => setFormData({ ...formData, ssSupplier: e.target.value })}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Pricing Specialist Fields - Hide for Supplier */}
+      {!isSupplier && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <FieldOwnershipLabel owner={FIELD_OWNERSHIP.PRICING_SPECIALIST.owner} />
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing Fields</h3>
+          <div className="space-y-4">
+            <Input
+              label="Supplier Price"
+              type="number"
+              step="0.01"
+              value={formData.supplierPrice || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, supplierPrice: parseFloat(e.target.value) || undefined })
+              }
+            />
+            <Input
+              label="KINEXO Price"
+              type="number"
+              step="0.01"
+              value={formData.kinexoPrice || ''}
+              onChange={(e) =>
+                setFormData({ ...formData, kinexoPrice: parseFloat(e.target.value) || undefined })
+              }
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Logistics Fields - Hide for Supplier */}
+      {!isSupplier && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <FieldOwnershipLabel owner={FIELD_OWNERSHIP.LOGISTICS.owner} />
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Logistics Fields</h3>
+          <div className="space-y-4">
+            <Input
+              label="Freight Strategy"
+              value={formData.freightStrategy || ''}
+              onChange={(e) => setFormData({ ...formData, freightStrategy: e.target.value })}
+            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Freight Brackets (JSON)
+              </label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows={4}
+                value={
+                  typeof formData.freightBrackets === 'string'
+                    ? formData.freightBrackets
+                    : formData.freightBrackets
+                      ? JSON.stringify(formData.freightBrackets, null, 2)
+                      : ''
+                }
+                onChange={(e) => {
+                  try {
+                    const parsed = e.target.value ? JSON.parse(e.target.value) : null;
+                    setFormData({ ...formData, freightBrackets: parsed });
+                  } catch {
+                    setFormData({ ...formData, freightBrackets: e.target.value as any });
+                  }
+                }}
+                placeholder='{"zone1": 10.00, "zone2": 15.00, "zone3": 20.00}'
+              />
+              <p className="text-xs text-gray-500 mt-1">Enter valid JSON format</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Supplier Fields */}
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -226,29 +253,31 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       </div>
 
-      {/* DC Operator Fields */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <FieldOwnershipLabel owner={FIELD_OWNERSHIP.DC_OPERATOR.owner} />
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">DC Operator Fields</h3>
-        <div className="space-y-4">
-          <Input
-            label="DC Status"
-            value={formData.dcStatus || ''}
-            onChange={(e) => setFormData({ ...formData, dcStatus: e.target.value })}
-            placeholder="e.g., In Stock, Transitioning, Runout"
-          />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">DC Notes</label>
-            <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows={3}
-              value={formData.dcNotes || ''}
-              onChange={(e) => setFormData({ ...formData, dcNotes: e.target.value })}
-              placeholder="DC setup notes, inventory status, etc."
+      {/* DC Operator Fields - Hide for Supplier */}
+      {!isSupplier && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <FieldOwnershipLabel owner={FIELD_OWNERSHIP.DC_OPERATOR.owner} />
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">DC Operator Fields</h3>
+          <div className="space-y-4">
+            <Input
+              label="DC Status"
+              value={formData.dcStatus || ''}
+              onChange={(e) => setFormData({ ...formData, dcStatus: e.target.value })}
+              placeholder="e.g., In Stock, Transitioning, Runout"
             />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">DC Notes</label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows={3}
+                value={formData.dcNotes || ''}
+                onChange={(e) => setFormData({ ...formData, dcNotes: e.target.value })}
+                placeholder="DC setup notes, inventory status, etc."
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="flex justify-end space-x-4">
         <Button type="button" variant="outline" onClick={onCancel}>

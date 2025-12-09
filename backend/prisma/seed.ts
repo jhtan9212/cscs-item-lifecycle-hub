@@ -393,6 +393,7 @@ async function main() {
   const supplierPermissions = [
     'VIEW_DASHBOARD',
     'VIEW_ITEM',
+    'UPDATE_ITEM', // Required to update supplier pricing, item number, and specifications
     'VIEW_OWN_PROJECTS',
     'SUBMIT_SUPPLIER_PRICING'
   ];
