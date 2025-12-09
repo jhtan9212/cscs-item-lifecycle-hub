@@ -395,7 +395,8 @@ async function main() {
     'VIEW_ITEM',
     'UPDATE_ITEM', // Required to update supplier pricing, item number, and specifications
     'VIEW_OWN_PROJECTS',
-    'SUBMIT_SUPPLIER_PRICING'
+    'SUBMIT_SUPPLIER_PRICING',
+    'ADVANCE_WORKFLOW' // Required to advance workflow after submitting supplier pricing
   ];
   for (const permName of supplierPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
