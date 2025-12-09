@@ -230,6 +230,30 @@ export const ProjectDetail: FC = () => {
               currentStage={project.currentStage}
             />
           )}
+          
+          {/* Role-specific workflow actions */}
+          {project.currentStage === 'KINEXO Pricing' && hasPermission('SUBMIT_PRICING') && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-blue-800 mb-4">
+                This project is at the KINEXO Pricing stage. Use the dedicated pricing interface to review and submit pricing.
+              </p>
+              <Button onClick={() => navigate(`/projects/${project.id}/pricing`)}>
+                Open Pricing Interface
+              </Button>
+            </div>
+          )}
+          
+          {project.currentStage === 'Freight Strategy' && hasPermission('UPDATE_ITEM') && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-blue-800 mb-4">
+                This project is at the Freight Strategy stage. Use the dedicated logistics interface to set freight strategy.
+              </p>
+              <Button onClick={() => navigate(`/projects/${project.id}/freight`)}>
+                Open Freight Strategy Interface
+              </Button>
+            </div>
+          )}
+          
           <WorkflowControls
             projectId={project.id}
             currentStage={project.currentStage}

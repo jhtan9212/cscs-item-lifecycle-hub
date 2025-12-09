@@ -6,6 +6,7 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { dashboardService, type DashboardStats } from '../services/dashboardService';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/formatters';
+import { usePermissions } from '../hooks/usePermissions';
 
 export const Dashboard: FC = () => {
   const { user } = useAuth();
@@ -120,6 +121,15 @@ export const Dashboard: FC = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">My Tasks</h3>
+          <p className="text-gray-600 text-sm mb-4">Projects requiring your action</p>
+          <Link to="/my-tasks">
+            <Button variant="primary" size="sm" className="w-full">
+              View My Tasks
+            </Button>
+          </Link>
+        </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Projects</h3>
           <p className="text-gray-600 text-sm mb-4">Manage item lifecycle projects</p>

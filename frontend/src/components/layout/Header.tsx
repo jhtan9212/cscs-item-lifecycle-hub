@@ -25,6 +25,11 @@ export const Header: FC = () => {
           <div className="flex items-center space-x-4">
             {user && (
               <>
+                <Link to="/my-tasks">
+                  <Button variant="outline" size="sm">
+                    My Tasks
+                  </Button>
+                </Link>
                 {hasPermission('MANAGE_PERMISSIONS') && (
                   <Link to="/role-management">
                     <Button variant="outline" size="sm">

@@ -40,5 +40,10 @@ export const projectService = {
     const response = await api.get(`/projects/${id}/workflow`);
     return response.data;
   },
+
+  getMyAssigned: async (): Promise<Project[]> => {
+    const response = await api.get<Project[]>('/projects/my-assigned');
+    return response.data;
+  },
 };
 

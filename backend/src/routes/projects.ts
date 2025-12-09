@@ -13,6 +13,12 @@ router.get(
   projectController.getAllProjects
 );
 router.get(
+  '/my-assigned',
+  authenticate,
+  checkPermission('VIEW_PROJECT'),
+  projectController.getMyAssignedProjects
+);
+router.get(
   '/:id',
   authenticate,
   checkPermission('VIEW_PROJECT'),

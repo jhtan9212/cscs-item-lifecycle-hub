@@ -258,3 +258,59 @@ export const getWorkflowStatus = async (req: Request, res: Response) => {
   }
 };
 
+export const getMyAssignedProjects = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      include: { role: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Get projects where current workflow step requires this user's role
+    const projects = await prisma.project.findMany({
+      where: {
+        workflowSteps: {
+          some: {
+            status: 'IN_PROGRESS',
+            requiredRole: user.role.name,
+          },
+        },
+        status: {
+          not: 'COMPLETED',
+        },
+      },
+      include: {
+        createdBy: {
+          include: {
+            role: true,
+          },
+        },
+        items: true,
+        workflowSteps: {
+          orderBy: { stepOrder: 'asc' },
+        },
+        _count: {
+          select: {
+            items: true,
+            comments: true,
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
+
+    res.json(projects);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
