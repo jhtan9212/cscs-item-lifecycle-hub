@@ -1,0 +1,227 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User and Role Management
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  roleId        String
+  role          Role     @relation(fields: [roleId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  projects      Project[]
+  auditLogs     AuditLog[]
+  
+  @@map("users")
+}
+
+model Role {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  description   String?
+  isAdmin       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  users         User[]
+  rolePermissions RolePermission[]
+  
+  @@map("roles")
+}
+
+model Permission {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  category      String   // e.g., "Items", "Pricing", "Workflow"
+  description   String?
+  createdAt     DateTime @default(now())
+  
+  rolePermissions RolePermission[]
+  
+  @@map("permissions")
+}
+
+model RolePermission {
+  id            String   @id @default(uuid())
+  roleId        String
+  permissionId  String
+  granted       Boolean  @default(true)
+  
+  role          Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission    Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// Project and Item Management
+model Project {
+  id            String   @id @default(uuid())
+  projectNumber String   @unique // e.g., "ISH-2025-0001"
+  name          String
+  description   String?
+  lifecycleType LifecycleType @default(NEW_ITEM)
+  status        ProjectStatus @default(DRAFT)
+  currentStage  String   // Current workflow stage
+  
+  createdById   String
+  createdBy     User     @relation(fields: [createdById], references: [id])
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  completedAt   DateTime?
+  
+  items         Item[]
+  workflowSteps WorkflowStep[]
+  comments      Comment[]
+  auditLogs     AuditLog[]
+  
+  @@map("projects")
+}
+
+enum LifecycleType {
+  NEW_ITEM
+  TRANSITIONING_ITEM
+  DELETING_ITEM
+}
+
+enum ProjectStatus {
+  DRAFT
+  IN_PROGRESS
+  WAITING_ON_SUPPLIER
+  WAITING_ON_DISTRIBUTOR
+  INTERNAL_REVIEW
+  COMPLETED
+  REJECTED
+}
+
+model Item {
+  id            String   @id @default(uuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Item Basic Information
+  itemNumber    String?
+  name          String
+  description   String?
+  category      String?
+  
+  // Field Ownership Labels (Part 1 - conceptual)
+  // These fields indicate which community/role owns the data
+  ownedByCategoryManager Boolean @default(false)
+  ownedByStrategicSupply Boolean @default(false)
+  ownedByPricingSpecialist Boolean @default(false)
+  ownedByLogistics Boolean @default(false)
+  ownedBySupplier Boolean @default(false)
+  ownedByDCOperator Boolean @default(false)
+  
+  // Item Specifications (grouped by owner)
+  // Category Manager fields
+  cmItemNumber  String?
+  cmDescription String?
+  cmCategory    String?
+  
+  // Strategic Supply fields
+  ssSupplier    String?
+  ssDistributionCenters String[] // Array of DC IDs
+  
+  // Pricing Specialist fields
+  supplierPrice Float?
+  kinexoPrice   Float?
+  pricingStatus String? // "PENDING", "APPROVED", "REJECTED"
+  
+  // Logistics fields
+  freightStrategy String?
+  freightBrackets String? // JSON string for brackets
+  
+  // Supplier fields
+  supplierItemNumber String?
+  supplierSpecs      String? // JSON string for specs
+  
+  // DC Operator fields
+  dcStatus       String?
+  dcNotes        String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("items")
+}
+
+// Workflow Management
+model WorkflowStep {
+  id            String   @id @default(uuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  stepName      String   // e.g., "Draft", "Freight Strategy", "CM Approval"
+  stepOrder     Int      // Order in workflow sequence
+  status        StepStatus @default(PENDING)
+  completedAt   DateTime?
+  completedBy   String?   // User ID who completed
+  
+  requiredRole  String?  // Role required to complete this step
+  description   String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([projectId, stepOrder])
+  @@map("workflow_steps")
+}
+
+enum StepStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+  SKIPPED
+}
+
+// Comments and Collaboration
+model Comment {
+  id            String   @id @default(uuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  userId        String
+  userName      String
+  content       String
+  isInternal    Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("comments")
+}
+
+// Audit Logging
+model AuditLog {
+  id            String   @id @default(uuid())
+  projectId     String?
+  project       Project? @relation(fields: [projectId], references: [id])
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  action        String   // e.g., "CREATE_PROJECT", "UPDATE_ITEM", "ADVANCE_STAGE"
+  entityType    String   // e.g., "PROJECT", "ITEM", "WORKFLOW"
+  entityId      String?
+  changes       String?  // JSON string for before/after state
+  
+  createdAt     DateTime @default(now())
+  
+  @@map("audit_logs")
+}
+
