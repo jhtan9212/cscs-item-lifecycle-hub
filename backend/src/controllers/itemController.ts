@@ -269,6 +269,10 @@ export const deleteItem = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const item = await prisma.item.findUnique({
       where: { id },
       include: {
@@ -284,11 +288,11 @@ export const deleteItem = async (req: Request, res: Response) => {
       where: { id },
     });
 
-    // Create audit log
+    // Create audit log with current user
     await prisma.auditLog.create({
       data: {
         projectId: item.projectId,
-        userId: item.project.createdById,
+        userId: req.user.userId,
         action: 'DELETE_ITEM',
         entityType: 'ITEM',
         entityId: id,
