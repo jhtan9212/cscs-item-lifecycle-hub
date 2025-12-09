@@ -126,11 +126,15 @@ export class WorkflowEngine {
     }
 
     // If current step has a requiredRole, user's role must match
-    if (currentStep.requiredRole) {
-      if (user.role.name !== currentStep.requiredRole) {
+    // Prefer workflow definition over database value to handle cases where database has incorrect requiredRole
+    const expectedRole = stages.find((s) => s.name === currentStep.stepName)?.requiredRole;
+    const effectiveRequiredRole = expectedRole || currentStep.requiredRole;
+    
+    if (effectiveRequiredRole) {
+      if (user.role.name !== effectiveRequiredRole) {
         return {
           canAdvance: false,
-          reason: `Only users with role "${currentStep.requiredRole}" can advance from this stage. Current user role: "${user.role.name}"`,
+          reason: `Only users with role "${effectiveRequiredRole}" can advance from this stage. Current user role: "${user.role.name}"`,
         };
       }
     }
@@ -303,22 +307,27 @@ export class WorkflowEngine {
       throw new Error('User not found');
     }
 
-    // Admin can always move back
-    if (!user.role.isAdmin) {
-      // If current step has a requiredRole, user's role must match
-      if (currentStep.requiredRole && user.role.name !== currentStep.requiredRole) {
-        throw new Error(
-          `Only users with role "${currentStep.requiredRole}" can move back from this stage. Current user role: "${user.role.name}"`
-        );
-      }
-    }
-
     const project = await prisma.project.findUnique({
       where: { id: projectId },
     });
 
     if (!project) {
       throw new Error('Project not found');
+    }
+
+    // Admin can always move back
+    if (!user.role.isAdmin) {
+      // If current step has a requiredRole, user's role must match
+      // Prefer workflow definition over database value to handle cases where database has incorrect requiredRole
+      const stages = this.getStagesForLifecycle(project.lifecycleType);
+      const expectedRole = stages.find((s) => s.name === currentStep.stepName)?.requiredRole;
+      const effectiveRequiredRole = expectedRole || currentStep.requiredRole;
+      
+      if (effectiveRequiredRole && user.role.name !== effectiveRequiredRole) {
+        throw new Error(
+          `Only users with role "${effectiveRequiredRole}" can move back from this stage. Current user role: "${user.role.name}"`
+        );
+      }
     }
 
     const previousStepOrder = currentStep.stepOrder - 1;
