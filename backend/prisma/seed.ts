@@ -1,4 +1,4 @@
-import { PrismaClient, LifecycleType, StepStatus } from '@prisma/client';
+import { PrismaClient, StepStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { WorkflowEngine } from '../src/services/workflowEngine';
 import { generateProjectNumber } from '../src/utils/helpers';
@@ -234,9 +234,12 @@ async function main() {
   const pricingPermissions = [
     'VIEW_DASHBOARD',
     'VIEW_ITEM',
+    'UPDATE_ITEM', // Required to update KINEXO pricing
     'VIEW_ALL_PROJECTS',
     'APPROVE_PRICING',
-    'SUBMIT_PRICING', 'VIEW_PRICING'
+    'SUBMIT_PRICING',
+    'VIEW_PRICING',
+    'ADVANCE_WORKFLOW' // Required to advance workflow after submitting pricing
   ];
   for (const permName of pricingPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
