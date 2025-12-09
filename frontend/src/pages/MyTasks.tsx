@@ -6,18 +6,19 @@ import { ProjectCard } from '@/components/projects/ProjectCard';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import { getErrorMessage } from '@/lib/errorUtils';
 
 export const MyTasks = () => {
   const { user } = useAuth();
   const { isAdmin } = usePermissions();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadAssignedProjects();
@@ -28,15 +29,13 @@ export const MyTasks = () => {
       setLoading(true);
       const data = await projectService.getMyAssigned();
       setProjects(data);
-      setError(null);
     } catch (err: any) {
-      if (err.response?.status === 403) {
-        setError(
-          'You do not have permission to view assigned projects. Please contact your administrator or log out and log back in to refresh your permissions.'
-        );
-      } else {
-        setError(err.message || 'Failed to load assigned projects');
-      }
+      const errorMessage = getErrorMessage(err);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -47,21 +46,6 @@ export const MyTasks = () => {
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription className="flex items-center justify-between">
-          <span>Error: {error}</span>
-          <Button onClick={loadAssignedProjects} variant="outline" size="sm" className="ml-4">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Retry
-          </Button>
-        </AlertDescription>
-      </Alert>
     );
   }
 

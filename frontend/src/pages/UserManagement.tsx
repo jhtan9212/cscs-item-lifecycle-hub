@@ -35,7 +35,6 @@ export const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<CreateUserData>({
@@ -58,9 +57,13 @@ export const UserManagement = () => {
       ]);
       setUsers(usersData);
       setRoles(rolesData);
-      setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to load users');
+      const errorMessage = getErrorMessage(err);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -68,15 +71,22 @@ export const UserManagement = () => {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!formData.name || !formData.email || !formData.password) {
-      setError('Name, email, and password are required');
+      toast({
+        title: 'Validation Error',
+        description: 'Name, email, and password are required',
+        variant: 'destructive',
+      });
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      toast({
+        title: 'Validation Error',
+        description: 'Password must be at least 6 characters',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -90,17 +100,16 @@ export const UserManagement = () => {
         description: 'User created successfully',
       });
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to create user');
+      const errorMessage = getErrorMessage(err);
       toast({
         title: 'Error',
-        description: err.response?.data?.error || err.message || 'Failed to create user',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
   };
 
   const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
-    setError(null);
     try {
       await userService.update(userId, updates);
       setEditingUser(null);
@@ -110,10 +119,10 @@ export const UserManagement = () => {
         description: 'User updated successfully',
       });
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to update user');
+      const errorMessage = getErrorMessage(err);
       toast({
         title: 'Error',
-        description: err.response?.data?.error || err.message || 'Failed to update user',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -123,7 +132,6 @@ export const UserManagement = () => {
     if (!confirm('Are you sure you want to deactivate this user?')) {
       return;
     }
-    setError(null);
     try {
       await userService.deactivate(userId);
       await loadData();
@@ -132,17 +140,16 @@ export const UserManagement = () => {
         description: 'User deactivated successfully',
       });
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to deactivate user');
+      const errorMessage = getErrorMessage(err);
       toast({
         title: 'Error',
-        description: err.response?.data?.error || err.message || 'Failed to deactivate user',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
   };
 
   const handleActivate = async (userId: string) => {
-    setError(null);
     try {
       await userService.activate(userId);
       await loadData();
@@ -151,10 +158,10 @@ export const UserManagement = () => {
         description: 'User activated successfully',
       });
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to activate user');
+      const errorMessage = getErrorMessage(err);
       toast({
         title: 'Error',
-        description: err.response?.data?.error || err.message || 'Failed to activate user',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -188,12 +195,6 @@ export const UserManagement = () => {
               <DialogDescription>Add a new user to the system</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateUser} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name *</Label>
@@ -256,13 +257,6 @@ export const UserManagement = () => {
           </DialogContent>
         </Dialog>
       </div>
-
-      {error && !showCreateForm && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
 
       <Card>
         <div className="overflow-x-auto">

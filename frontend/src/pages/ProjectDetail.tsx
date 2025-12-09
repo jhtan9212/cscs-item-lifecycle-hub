@@ -64,7 +64,13 @@ export const ProjectDetail = () => {
       setProject(data);
       setError(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to load project');
+      const errorMessage = getErrorMessage(err);
+      setError(errorMessage);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -91,7 +97,7 @@ export const ProjectDetail = () => {
         description: 'The workflow has been successfully advanced to the next stage.',
       });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || 'Failed to advance workflow';
+      const errorMessage = getErrorMessage(err);
       toast({
         title: 'Error',
         description: errorMessage,
@@ -111,8 +117,7 @@ export const ProjectDetail = () => {
         description: 'The workflow has been successfully moved back to the previous stage.',
       });
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.error || err.message || 'Failed to move back workflow';
+      const errorMessage = getErrorMessage(err);
       toast({
         title: 'Error',
         description: errorMessage,
@@ -133,7 +138,7 @@ export const ProjectDetail = () => {
         description: 'The item has been successfully created.',
       });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || 'Failed to create item';
+      const errorMessage = getErrorMessage(err);
       toast({
         title: 'Error',
         description: errorMessage,
@@ -155,7 +160,7 @@ export const ProjectDetail = () => {
         description: 'The item has been successfully updated.',
       });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || 'Failed to update item';
+      const errorMessage = getErrorMessage(err);
       toast({
         title: 'Error',
         description: errorMessage,
@@ -175,7 +180,7 @@ export const ProjectDetail = () => {
         description: 'The item has been successfully deleted.',
       });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || 'Failed to delete item';
+      const errorMessage = getErrorMessage(err);
       toast({
         title: 'Error',
         description: errorMessage,

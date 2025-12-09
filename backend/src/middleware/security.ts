@@ -45,14 +45,22 @@ export const securityHeaders = (
  */
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
-const RATE_LIMIT_MAX = 100; // requests per window
+// More lenient rate limits - adjust based on environment
+const RATE_LIMIT_MAX = config.nodeEnv === 'development' ? 1000 : 100; // requests per window
 
 export const rateLimiter = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  const clientId = req.ip || 'unknown';
+  // Get client IP - handle proxy headers
+  const clientId = 
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    (req.headers['x-real-ip'] as string) ||
+    req.socket.remoteAddress ||
+    req.ip ||
+    'unknown';
+  
   const now = Date.now();
   
   const clientData = requestCounts.get(clientId);
@@ -67,10 +75,14 @@ export const rateLimiter = (
   }
   
   if (clientData.count >= RATE_LIMIT_MAX) {
+    // Set CORS headers before sending error response
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(429).json({
       success: false,
       error: {
         message: 'Too many requests. Please try again later.',
+        retryAfter: Math.ceil((clientData.resetTime - now) / 1000), // seconds
       },
     });
     return;

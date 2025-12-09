@@ -92,44 +92,82 @@ export class NotificationService {
   }
 
   static async getUnreadCount(userId: string): Promise<number> {
-    return prisma.notification.count({
-      where: {
+    // Validate userId
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid userId provided');
+    }
+
+    try {
+      return await prisma.notification.count({
+        where: {
+          userId,
+          read: false,
+        },
+      });
+    } catch (error: any) {
+      logger.error('Error getting unread count:', {
         userId,
-        read: false,
-      },
-    });
+        error: error.message,
+        stack: error.stack,
+      });
+      throw error;
+    }
   }
 
   static async getUserNotifications(
     userId: string,
     options?: { limit?: number; offset?: number; unreadOnly?: boolean }
   ) {
-    const { limit = 50, offset = 0, unreadOnly = false } = options || {};
+    // Validate userId
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid userId provided');
+    }
 
-    return prisma.notification.findMany({
-      where: {
+    // Validate and sanitize options to prevent invalid queries
+    const limit = options?.limit && options.limit > 0 && options.limit <= 1000 
+      ? options.limit 
+      : 50;
+    const offset = options?.offset && options.offset >= 0 
+      ? options.offset 
+      : 0;
+    const unreadOnly = options?.unreadOnly || false;
+
+    try {
+      return await prisma.notification.findMany({
+        where: {
+          userId,
+          ...(unreadOnly && { read: false }),
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: limit,
+        skip: offset,
+        select: {
+          id: true,
+          userId: true,
+          type: true,
+          title: true,
+          message: true,
+          read: true,
+          readAt: true,
+          relatedProjectId: true,
+          relatedEntityType: true,
+          relatedEntityId: true,
+          createdAt: true,
+        },
+      });
+    } catch (error: any) {
+      logger.error('Error fetching user notifications:', {
         userId,
-        ...(unreadOnly && { read: false }),
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit,
-      skip: offset,
-      select: {
-        id: true,
-        userId: true,
-        type: true,
-        title: true,
-        message: true,
-        read: true,
-        readAt: true,
-        relatedProjectId: true,
-        relatedEntityType: true,
-        relatedEntityId: true,
-        createdAt: true,
-      },
-    });
+        limit,
+        offset,
+        unreadOnly,
+        error: error.message,
+        stack: error.stack,
+      });
+      throw error;
+    }
   }
 }
 

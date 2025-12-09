@@ -27,7 +27,8 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/errorUtils';
 import { formatDateTime } from '@/utils/formatters';
 import type { Project } from '@/types/project';
 import {
@@ -40,11 +41,11 @@ import {
 } from 'lucide-react';
 
 export const AuditLogs = () => {
+  const { toast } = useToast();
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<AuditLogFilters>({
     limit: 50,
@@ -69,9 +70,13 @@ export const AuditLogs = () => {
       const response = await auditLogService.getAll(filters);
       setAuditLogs(response.auditLogs);
       setTotal(response.total);
-      setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Failed to load audit logs');
+      const errorMessage = getErrorMessage(err);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -158,13 +163,6 @@ export const AuditLogs = () => {
           {showFilters ? 'Hide Filters' : 'Show Filters'}
         </Button>
       </div>
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
 
       {showFilters && filterOptions && (
         <Card>

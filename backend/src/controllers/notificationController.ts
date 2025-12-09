@@ -9,12 +9,29 @@ export const getUserNotifications = async (req: Request, res: Response): Promise
 
     const { unreadOnly, limit, offset } = req.query;
 
+    // Validate and parse query parameters safely
+    let parsedLimit: number | undefined;
+    if (limit) {
+      const limitNum = parseInt(limit as string, 10);
+      if (!isNaN(limitNum) && limitNum > 0 && limitNum <= 1000) {
+        parsedLimit = limitNum;
+      }
+    }
+
+    let parsedOffset: number | undefined;
+    if (offset) {
+      const offsetNum = parseInt(offset as string, 10);
+      if (!isNaN(offsetNum) && offsetNum >= 0) {
+        parsedOffset = offsetNum;
+      }
+    }
+
     const notifications = await NotificationService.getUserNotifications(
       req.user.userId,
       {
         unreadOnly: unreadOnly === 'true',
-        limit: limit ? parseInt(limit as string) : undefined,
-        offset: offset ? parseInt(offset as string) : undefined,
+        limit: parsedLimit,
+        offset: parsedOffset,
       }
     );
 
@@ -23,7 +40,7 @@ export const getUserNotifications = async (req: Request, res: Response): Promise
     const mappedNotifications = notifications.map(n => ({
       ...n,
       isRead: n.read,
-      title: n.title || n.message.substring(0, 50), // Fallback to message if title missing
+      title: n.title || (n.message ? n.message.substring(0, 50) : 'Notification'), // Safe fallback
     }));
 
     return res.json(mappedNotifications);

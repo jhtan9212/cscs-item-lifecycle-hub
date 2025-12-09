@@ -22,6 +22,13 @@ export const errorHandler = (
     ip: req.ip,
   });
 
+  // Set CORS headers for error responses
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
   // Handle known operational errors
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
@@ -52,6 +59,20 @@ export const errorHandler = (
       success: false,
       error: {
         message: 'Invalid or expired token',
+      },
+    });
+    return;
+  }
+
+  // Handle CORS errors
+  if (err.message.includes('CORS') || err.message.includes('Not allowed by CORS')) {
+    res.status(403).json({
+      success: false,
+      error: {
+        message: 'CORS policy violation. Origin not allowed.',
+        ...(config.nodeEnv === 'development' && { 
+          details: `Requested origin: ${req.headers.origin || 'none'}` 
+        }),
       },
     });
     return;

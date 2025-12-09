@@ -3,15 +3,15 @@ import { roleService, type Role } from '@/services/roleService';
 import { PermissionMatrix } from '@/components/permissions/PermissionMatrix';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
+import { getErrorMessage } from '@/lib/errorUtils';
 
 export const RoleManagement = () => {
+  const { toast } = useToast();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadRoles();
@@ -25,9 +25,13 @@ export const RoleManagement = () => {
       if (data.length > 0 && !selectedRoleId) {
         setSelectedRoleId(data[0].id);
       }
-      setError(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to load roles');
+      const errorMessage = getErrorMessage(err);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -38,15 +42,6 @@ export const RoleManagement = () => {
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>Error: {error}</AlertDescription>
-      </Alert>
     );
   }
 
