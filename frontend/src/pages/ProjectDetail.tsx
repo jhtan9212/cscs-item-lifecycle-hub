@@ -12,10 +12,12 @@ import { ItemForm } from '../components/items/ItemForm';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { Button } from '../components/common/Button';
 import { formatDate } from '../utils/formatters';
+import { usePermissions } from '../hooks/usePermissions';
 
 export const ProjectDetail: FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
   const [project, setProject] = useState<Project | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);

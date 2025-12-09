@@ -68,27 +68,18 @@ export const getProject = async (req: Request, res: Response) => {
 
 export const createProject = async (req: Request, res: Response) => {
   try {
-    const { name, description, lifecycleType, items, createdById } = req.body;
+    const { name, description, lifecycleType, items } = req.body;
 
     if (!name) {
       return res.status(400).json({ error: 'Project name is required' });
     }
 
-    // Use provided userId or default to first admin user
-    let userId = createdById;
-    if (!userId) {
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          role: {
-            isAdmin: true,
-          },
-        },
-      });
-      userId = adminUser?.id;
-      if (!userId) {
-        return res.status(400).json({ error: 'No admin user found. Please create a user first.' });
-      }
+    // Use authenticated user or throw error
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
     }
+
+    const userId = req.user.userId;
 
     const projectNumber = generateProjectNumber();
 
@@ -228,25 +219,13 @@ export const deleteProject = async (req: Request, res: Response) => {
 export const advanceWorkflow = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { comment, userId } = req.body;
+    const { comment } = req.body;
 
-    // Use provided userId or default to first admin user
-    let actualUserId = userId;
-    if (!actualUserId) {
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          role: {
-            isAdmin: true,
-          },
-        },
-      });
-      actualUserId = adminUser?.id;
-      if (!actualUserId) {
-        return res.status(400).json({ error: 'No user found. Please provide userId or create a user first.' });
-      }
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const result = await WorkflowEngine.advance(id, actualUserId, comment);
+    const result = await WorkflowEngine.advance(id, req.user.userId, comment);
     res.json(result);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
@@ -256,25 +235,13 @@ export const advanceWorkflow = async (req: Request, res: Response) => {
 export const moveBackWorkflow = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { comment, userId } = req.body;
+    const { comment } = req.body;
 
-    // Use provided userId or default to first admin user
-    let actualUserId = userId;
-    if (!actualUserId) {
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          role: {
-            isAdmin: true,
-          },
-        },
-      });
-      actualUserId = adminUser?.id;
-      if (!actualUserId) {
-        return res.status(400).json({ error: 'No user found. Please provide userId or create a user first.' });
-      }
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const result = await WorkflowEngine.moveBack(id, actualUserId, comment);
+    const result = await WorkflowEngine.moveBack(id, req.user.userId, comment);
     res.json(result);
   } catch (error: any) {
     res.status(400).json({ error: error.message });

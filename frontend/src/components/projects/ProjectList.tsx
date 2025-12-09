@@ -6,12 +6,14 @@ import { ProjectCard } from './ProjectCard';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { Button } from '../common/Button';
 import { useNavigate } from 'react-router-dom';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export const ProjectList: FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
     loadProjects();
@@ -53,17 +55,21 @@ export const ProjectList: FC = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Projects</h2>
-        <Button onClick={() => navigate('/projects/new')}>
-          Create New Project
-        </Button>
+        {hasPermission('CREATE_PROJECT') && (
+          <Button onClick={() => navigate('/projects/new')}>
+            Create New Project
+          </Button>
+        )}
       </div>
 
       {projects.length === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-12 text-center">
           <p className="text-gray-500 mb-4">No projects found</p>
-          <Button onClick={() => navigate('/projects/new')}>
-            Create Your First Project
-          </Button>
+          {hasPermission('CREATE_PROJECT') && (
+            <Button onClick={() => navigate('/projects/new')}>
+              Create Your First Project
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

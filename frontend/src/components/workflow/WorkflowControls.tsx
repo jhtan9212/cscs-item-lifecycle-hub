@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FC } from 'react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface WorkflowControlsProps {
   projectId: string;
@@ -19,8 +20,12 @@ export const WorkflowControls: FC<WorkflowControlsProps> = ({
   onAdvance,
   onMoveBack,
 }) => {
+  const { hasPermission } = usePermissions();
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  const canAdvanceWorkflow = hasPermission('ADVANCE_WORKFLOW');
+  const canMoveBackWorkflow = hasPermission('MOVE_BACK_WORKFLOW');
 
   const handleAdvance = async () => {
     try {
@@ -61,22 +66,29 @@ export const WorkflowControls: FC<WorkflowControlsProps> = ({
         />
       </div>
       <div className="flex space-x-4">
-        <Button
-          onClick={handleAdvance}
-          disabled={!canAdvance || loading}
-          isLoading={loading}
-          variant="primary"
-        >
-          Advance to Next Stage
-        </Button>
-        <Button
-          onClick={handleMoveBack}
-          disabled={!canMoveBack || loading}
-          isLoading={loading}
-          variant="outline"
-        >
-          Move Back
-        </Button>
+        {canAdvanceWorkflow && (
+          <Button
+            onClick={handleAdvance}
+            disabled={!canAdvance || loading}
+            isLoading={loading}
+            variant="primary"
+          >
+            Advance to Next Stage
+          </Button>
+        )}
+        {canMoveBackWorkflow && (
+          <Button
+            onClick={handleMoveBack}
+            disabled={!canMoveBack || loading}
+            isLoading={loading}
+            variant="outline"
+          >
+            Move Back
+          </Button>
+        )}
+        {!canAdvanceWorkflow && !canMoveBackWorkflow && (
+          <p className="text-sm text-gray-500">You don't have permission to modify workflow</p>
+        )}
       </div>
     </div>
   );

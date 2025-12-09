@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import type { Item } from '../../types/item';
 import { Button } from '../common/Button';
+import { usePermissions } from '../../hooks/usePermissions';
 
 interface ItemListProps {
   items: Item[];
@@ -10,21 +11,30 @@ interface ItemListProps {
 }
 
 export const ItemList: FC<ItemListProps> = ({ items, onEdit, onDelete, onCreateNew }) => {
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission('CREATE_ITEM');
+  const canUpdate = hasPermission('UPDATE_ITEM');
+  const canDelete = hasPermission('DELETE_ITEM');
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold text-gray-900">Items</h3>
-        <Button onClick={onCreateNew} size="sm">
-          Add Item
-        </Button>
+        {canCreate && (
+          <Button onClick={onCreateNew} size="sm">
+            Add Item
+          </Button>
+        )}
       </div>
 
       {items.length === 0 ? (
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
           <p className="text-gray-500 mb-4">No items found</p>
-          <Button onClick={onCreateNew} size="sm">
-            Create First Item
-          </Button>
+          {canCreate && (
+            <Button onClick={onCreateNew} size="sm">
+              Create First Item
+            </Button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
@@ -42,18 +52,24 @@ export const ItemList: FC<ItemListProps> = ({ items, onEdit, onDelete, onCreateN
                     </span>
                   )}
                 </div>
-                <div className="flex space-x-2">
-                  <Button onClick={() => onEdit(item)} size="sm" variant="outline">
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => onDelete(item.id)}
-                    size="sm"
-                    variant="danger"
-                  >
-                    Delete
-                  </Button>
-                </div>
+                {(canUpdate || canDelete) && (
+                  <div className="flex space-x-2">
+                    {canUpdate && (
+                      <Button onClick={() => onEdit(item)} size="sm" variant="outline">
+                        Edit
+                      </Button>
+                    )}
+                    {canDelete && (
+                      <Button
+                        onClick={() => onDelete(item.id)}
+                        size="sm"
+                        variant="danger"
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}

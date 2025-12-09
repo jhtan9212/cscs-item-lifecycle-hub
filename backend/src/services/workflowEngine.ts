@@ -1,5 +1,7 @@
 import prisma from '../config/database';
 import { Project, LifecycleType, StepStatus } from '@prisma/client';
+import { NotificationService } from './notificationService';
+import { TaskService } from './taskService';
 
 // Workflow stage definitions
 const WORKFLOW_STAGES = {
@@ -202,6 +204,55 @@ export class WorkflowEngine {
           },
         });
       }
+    }
+
+    // Send notifications (Part 2)
+    try {
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        include: { createdBy: true },
+      });
+
+      if (project && nextStage) {
+        // Notify project creator
+        await NotificationService.create({
+          userId: project.createdById,
+          type: 'STAGE_CHANGE',
+          title: 'Workflow Stage Advanced',
+          message: `Project ${project.projectNumber} has moved to stage: ${nextStage.name}`,
+          relatedProjectId: projectId,
+          relatedEntityType: 'WORKFLOW',
+          relatedEntityId: nextStep?.id,
+        });
+
+        // If next stage requires a role, notify users with that role
+        if (nextStage.requiredRole) {
+          await NotificationService.createForRole(
+            nextStage.requiredRole,
+            {
+              type: 'APPROVAL_REQUEST',
+              title: 'Action Required',
+              message: `Project ${project.projectNumber} requires your attention at stage: ${nextStage.name}`,
+              relatedProjectId: projectId,
+              relatedEntityType: 'WORKFLOW',
+              relatedEntityId: nextStep?.id,
+            }
+          );
+
+          // Create task for the role
+          await TaskService.create({
+            projectId,
+            type: 'APPROVAL',
+            title: `Complete: ${nextStage.name}`,
+            description: nextStage.description,
+            assignedRole: nextStage.requiredRole,
+            priority: 'HIGH',
+          });
+        }
+      }
+    } catch (error) {
+      // Log but don't fail workflow advancement
+      console.error('Error sending notifications:', error);
     }
 
     return await this.getWorkflowStatus(projectId);
