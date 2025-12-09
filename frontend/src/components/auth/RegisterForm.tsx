@@ -1,167 +1,210 @@
-import { useState, useEffect } from 'react';
-import type { FC } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Input } from '../common/Input';
-import { Button } from '../common/Button';
-import api from '../../services/api';
+import { useState, useEffect } from "react"
+import { useNavigate, Link } from "react-router-dom"
+import { useAuth } from "@/context/AuthContext"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AuthLayout } from "@/components/layouts/AuthLayout"
+import { AlertCircle, Loader2 } from "lucide-react"
+import api from "@/services/api"
 
 interface Role {
-  id: string;
-  name: string;
-  description?: string;
+  id: string
+  name: string
+  description?: string
 }
 
-export const RegisterForm: FC = () => {
+export const RegisterForm = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    name: '',
-    password: '',
-    confirmPassword: '',
-    roleId: '',
-  });
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
-  const navigate = useNavigate();
+    email: "",
+    name: "",
+    password: "",
+    confirmPassword: "",
+    roleId: "",
+  })
+  const [roles, setRoles] = useState<Role[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [loadingRoles, setLoadingRoles] = useState(true)
+  const { register } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        // Roles endpoint is now public, so this should work without authentication
-        const response = await api.get('/roles');
+        const response = await api.get("/roles")
         if (response.data) {
-          setRoles(response.data);
-          // Set default to Category Manager if available
-          const cmRole = response.data.find((r: Role) => r.name === 'Category Manager');
+          setRoles(response.data)
+          const cmRole = response.data.find((r: Role) => r.name === "Category Manager")
           if (cmRole) {
-            setFormData((prev) => ({ ...prev, roleId: cmRole.id }));
+            setFormData((prev) => ({ ...prev, roleId: cmRole.id }))
           }
         }
       } catch (err) {
-        console.error('Failed to fetch roles:', err);
-        // Continue without roles - backend will assign default role if none selected
+        console.error("Failed to fetch roles:", err)
+      } finally {
+        setLoadingRoles(false)
       }
-    };
-    fetchRoles();
-  }, []);
+    }
+    fetchRoles()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
+      setError("Passwords do not match")
+      return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
+      setError("Password must be at least 6 characters")
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     try {
-      await register(formData.email, formData.name, formData.password, formData.roleId || undefined);
-      // Registration successful - user is now authenticated
-      // Navigate to dashboard (ProtectedRoute will check localStorage if user state not ready)
-      navigate('/');
+      await register(
+        formData.email,
+        formData.name,
+        formData.password,
+        formData.roleId || undefined
+      )
+      navigate("/")
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed. Please try again.');
+      setError(err.response?.data?.error || "Registration failed. Please try again.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
-              sign in to existing account
+    <AuthLayout
+      title="Create your account"
+      description="Enter your information to get started"
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>Sign Up</CardTitle>
+          <CardDescription>
+            Already have an account?{" "}
+            <Link to="/login" className="text-primary hover:underline font-medium">
+              Sign in to existing account
             </Link>
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-          <div className="space-y-4">
-            <Input
-              label="Full Name"
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-            <Input
-              label="Email address"
-              type="email"
-              autoComplete="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Role {roles.length === 0 && <span className="text-gray-500 text-xs">(Loading...)</span>}
-              </label>
-              <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.roleId}
-                onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                type="text"
                 required
-                disabled={roles.length === 0}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="John Doe"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email address</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">
+                Role {loadingRoles && <span className="text-muted-foreground text-xs">(Loading...)</span>}
+              </Label>
+              <Select
+                value={formData.roleId}
+                onValueChange={(value) => setFormData({ ...formData, roleId: value })}
+                disabled={loadingRoles || roles.length === 0}
+                required
               >
-                <option value="">Select a role</option>
-                {roles.map((role) => (
-                  <option key={role.id} value={role.id}>
-                    {role.name}
-                  </option>
-                ))}
-              </select>
-              {roles.length === 0 && (
-                <p className="text-xs text-gray-500 mt-1">
+                <SelectTrigger id="role">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {roles.length === 0 && !loadingRoles && (
+                <p className="text-xs text-muted-foreground">
                   If no roles appear, the backend will assign a default role (Category Manager)
                 </p>
               )}
             </div>
-            <Input
-              label="Password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
-            <Input
-              label="Confirm Password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            />
-          </div>
 
-          <div>
-            <Button type="submit" isLoading={loading} className="w-full">
-              Create Account
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="At least 6 characters"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                placeholder="Re-enter your password"
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading || loadingRoles}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
+          </form>
+        </CardContent>
+      </Card>
+    </AuthLayout>
+  )
+}

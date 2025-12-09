@@ -1,81 +1,86 @@
-import type { FC } from 'react';
-import type { Item } from '../../types/item';
-import { Button } from '../common/Button';
-import { usePermissions } from '../../hooks/usePermissions';
+import type { Item } from "@/types/item"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { usePermissions } from "@/hooks/usePermissions"
+import { Plus, Edit, Trash2 } from "lucide-react"
 
 interface ItemListProps {
-  items: Item[];
-  onEdit: (item: Item) => void;
-  onDelete: (itemId: string) => void;
-  onCreateNew: () => void;
+  items: Item[]
+  onEdit: (item: Item) => void
+  onDelete: (itemId: string) => void
+  onCreateNew: () => void
 }
 
-export const ItemList: FC<ItemListProps> = ({ items, onEdit, onDelete, onCreateNew }) => {
-  const { hasPermission } = usePermissions();
-  const canCreate = hasPermission('CREATE_ITEM');
-  const canUpdate = hasPermission('UPDATE_ITEM');
-  const canDelete = hasPermission('DELETE_ITEM');
+export const ItemList = ({ items, onEdit, onDelete, onCreateNew }: ItemListProps) => {
+  const { hasPermission } = usePermissions()
+  const canCreate = hasPermission("CREATE_ITEM")
+  const canUpdate = hasPermission("UPDATE_ITEM")
+  const canDelete = hasPermission("DELETE_ITEM")
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Items</h3>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Items</h3>
         {canCreate && (
           <Button onClick={onCreateNew} size="sm">
+            <Plus className="mr-2 h-4 w-4" />
             Add Item
           </Button>
         )}
       </div>
 
       {items.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-500 mb-4">No items found</p>
-          {canCreate && (
-            <Button onClick={onCreateNew} size="sm">
-              Create First Item
-            </Button>
-          )}
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <p className="text-muted-foreground mb-4">No items found</p>
+            {canCreate && (
+              <Button onClick={onCreateNew} size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                Create First Item
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {items.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow-md p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-semibold text-gray-900">{item.name}</h4>
-                  {item.description && (
-                    <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                  )}
-                  {item.category && (
-                    <span className="inline-block mt-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                      {item.category}
-                    </span>
-                  )}
-                </div>
-                {(canUpdate || canDelete) && (
-                  <div className="flex space-x-2">
-                    {canUpdate && (
-                      <Button onClick={() => onEdit(item)} size="sm" variant="outline">
-                        Edit
-                      </Button>
+            <Card key={item.id}>
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1 space-y-2">
+                    <h4 className="font-semibold">{item.name}</h4>
+                    {item.description && (
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
                     )}
-                    {canDelete && (
-                      <Button
-                        onClick={() => onDelete(item.id)}
-                        size="sm"
-                        variant="danger"
-                      >
-                        Delete
-                      </Button>
+                    {item.category && (
+                      <Badge variant="outline" className="text-xs">
+                        {item.category}
+                      </Badge>
                     )}
                   </div>
-                )}
-              </div>
-            </div>
+                  {(canUpdate || canDelete) && (
+                    <div className="flex gap-2 shrink-0">
+                      {canUpdate && (
+                        <Button onClick={() => onEdit(item)} size="sm" variant="outline">
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button onClick={() => onDelete(item.id)} size="sm" variant="destructive">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
     </div>
-  );
-};
-
+  )
+}
