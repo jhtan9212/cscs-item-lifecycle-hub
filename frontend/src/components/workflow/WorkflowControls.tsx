@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePermissions } from '@/hooks/usePermissions';
 import { ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
@@ -69,11 +69,12 @@ export const WorkflowControls = ({
           </p>
           <div className="space-y-2">
             <Label htmlFor="comment">Comment (optional)</Label>
-            <Input
+            <Textarea
               id="comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Add a comment about this workflow change..."
+              rows={3}
             />
           </div>
         </div>

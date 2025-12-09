@@ -208,7 +208,9 @@ async function main() {
     'CREATE_ITEM', 'VIEW_ITEM',
     'VIEW_ALL_PROJECTS',
     'APPROVE_AS_SSM', 'REJECT_PROJECTS', 'VIEW_FREIGHT_STRATEGY',
-    'VIEW_PRICING'
+    'VIEW_PRICING',
+    'ADVANCE_WORKFLOW', // Required to advance workflow after approval
+    'MOVE_BACK_WORKFLOW' // Required to move workflow back if needed
   ];
   for (const permName of ssmPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
