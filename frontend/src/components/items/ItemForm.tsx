@@ -18,6 +18,9 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
   const { user } = useAuth();
   const userRole = user?.role?.name || '';
   const isSupplier = userRole === 'Supplier';
+  const isDCOperator = userRole === 'DC Operator';
+  const isAdmin = user?.role?.isAdmin || false;
+  const isCategoryManager = userRole === 'Category Manager';
   
   const [formData, setFormData] = useState<Partial<Item>>({
     name: item?.name || '',
@@ -58,6 +61,13 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
           supplierSpecs: formData.supplierSpecs,
         };
         await onSubmit(supplierData);
+      } else if (isDCOperator) {
+        // For DC Operators, only submit DC-specific fields
+        const dcData: Partial<Item> = {
+          dcStatus: formData.dcStatus,
+          dcNotes: formData.dcNotes,
+        };
+        await onSubmit(dcData);
       } else {
         // For other roles, submit all form data
         await onSubmit(formData);
@@ -71,8 +81,8 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information - Show for all roles except Supplier */}
-      {!isSupplier && (
+      {/* Basic Information - Show for all roles except Supplier and DC Operator */}
+      {!isSupplier && !isDCOperator && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
           <div className="space-y-4">
@@ -96,8 +106,8 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       )}
 
-      {/* Category Manager Fields - Hide for Supplier */}
-      {!isSupplier && (
+      {/* Category Manager Fields - Hide for Supplier and DC Operator */}
+      {!isSupplier && !isDCOperator && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.CATEGORY_MANAGER.owner} />
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Manager Fields</h3>
@@ -121,8 +131,8 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       )}
 
-      {/* Strategic Supply Fields - Hide for Supplier */}
-      {!isSupplier && (
+      {/* Strategic Supply Fields - Hide for Supplier and DC Operator */}
+      {!isSupplier && !isDCOperator && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.STRATEGIC_SUPPLY.owner} />
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Strategic Supply Fields</h3>
@@ -136,8 +146,8 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       )}
 
-      {/* Pricing Specialist Fields - Hide for Supplier */}
-      {!isSupplier && (
+      {/* Pricing Specialist Fields - Hide for Supplier and DC Operator */}
+      {!isSupplier && !isDCOperator && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.PRICING_SPECIALIST.owner} />
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing Fields</h3>
@@ -164,8 +174,8 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       )}
 
-      {/* Logistics Fields - Hide for Supplier */}
-      {!isSupplier && (
+      {/* Logistics Fields - Hide for Supplier and DC Operator */}
+      {!isSupplier && !isDCOperator && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.LOGISTICS.owner} />
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Logistics Fields</h3>
@@ -205,8 +215,9 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       )}
 
-      {/* Supplier Fields */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+      {/* Supplier Fields - Hide for DC Operator */}
+      {!isDCOperator && (
+        <div className="bg-white rounded-lg shadow-md p-6">
         <FieldOwnershipLabel owner={FIELD_OWNERSHIP.SUPPLIER.owner} />
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Supplier Fields</h3>
         <div className="space-y-4">
@@ -252,9 +263,10 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
           </div>
         </div>
       </div>
+      )}
 
-      {/* DC Operator Fields - Hide for Supplier */}
-      {!isSupplier && (
+      {/* DC Operator Fields - Only show to DC Operator */}
+      {isDCOperator && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.DC_OPERATOR.owner} />
           <h3 className="text-lg font-semibold text-gray-900 mb-4">DC Operator Fields</h3>

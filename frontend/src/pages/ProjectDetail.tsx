@@ -21,6 +21,7 @@ import { commentService } from '@/services/commentService';
 import type { Comment } from '@/types/project';
 import { ArrowLeft, AlertCircle, Info } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/errorUtils';
 
 export const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -96,6 +97,8 @@ export const ProjectDetail = () => {
         title: 'Workflow Advanced',
         description: 'The workflow has been successfully advanced to the next stage.',
       });
+      // Redirect to My Tasks page after successful workflow advancement
+      navigate('/my-tasks');
     } catch (err: any) {
       const errorMessage = getErrorMessage(err);
       toast({

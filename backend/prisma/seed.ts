@@ -423,8 +423,10 @@ async function main() {
     'VIEW_DASHBOARD',
     'VIEW_DCS',
     'VIEW_ITEM',
+    'UPDATE_ITEM', // Required to update DC status and notes
     'VIEW_OWN_PROJECTS',
-    'COMPLETE_DC_SETUP'
+    'COMPLETE_DC_SETUP',
+    'ADVANCE_WORKFLOW' // Required to advance workflow after completing DC setup
   ];
   for (const permName of dcOperatorPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
