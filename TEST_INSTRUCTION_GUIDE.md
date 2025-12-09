@@ -276,6 +276,7 @@ After seeding, the following test projects are available:
 - ✅ All UI elements visible
 - ✅ No permission errors
 
+<!-- Todo: need to check role management features -->
 #### Test Case 2: Role Management
 
 **Steps:**
@@ -809,7 +810,7 @@ After seeding, the following test projects are available:
 - ✅ Can only update DC-related fields
 - ✅ Can only view own assigned projects
 
-#### Test Case 6: Workflow Integration
+#### Test Case 6: Workflow Integration (following steps is incorrect each user should move to next stage, Category Manager unable to move stage to the DC setup stage)
 
 **Steps:**
 1. Login as Category Manager

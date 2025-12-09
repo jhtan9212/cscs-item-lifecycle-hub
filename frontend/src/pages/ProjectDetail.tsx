@@ -309,7 +309,11 @@ export const ProjectDetail = () => {
 
         <TabsContent value="workflow" className="space-y-6">
           {project.workflowSteps && (
-            <WorkflowTimeline steps={project.workflowSteps} currentStage={project.currentStage} />
+            <WorkflowTimeline 
+              steps={project.workflowSteps} 
+              currentStage={project.currentStage}
+              lifecycleType={project.lifecycleType}
+            />
           )}
 
           {/* Role-specific workflow actions */}

@@ -18,6 +18,8 @@ model User {
   password      String   // Hashed password for authentication
   roleId        String
   role          Role     @relation(fields: [roleId], references: [id])
+  organizationId String?
+  organization  Organization? @relation(fields: [organizationId], references: [id])
   isActive      Boolean  @default(true)
   lastLogin     DateTime?
   createdAt     DateTime @default(now())
@@ -28,6 +30,7 @@ model User {
   notifications Notification[]
   tasks         Task[]
   
+  @@index([organizationId])
   @@map("users")
 }
 
@@ -82,6 +85,8 @@ model Project {
   
   createdById   String
   createdBy     User     @relation(fields: [createdById], references: [id])
+  organizationId String?
+  organization  Organization? @relation(fields: [organizationId], references: [id])
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -92,10 +97,12 @@ model Project {
   comments      Comment[]
   auditLogs     AuditLog[]
   tasks         Task[]
+  versions      ProjectVersion[]
   
   @@index([status])
   @@index([lifecycleType])
   @@index([createdById])
+  @@index([organizationId])
   @@index([createdAt])
   @@map("projects")
 }
@@ -166,7 +173,41 @@ model Item {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
+  versions      ItemVersion[]
+  
   @@map("items")
+}
+
+// Version History for Items
+model ItemVersion {
+  id            String   @id @default(uuid())
+  itemId        String
+  item          Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  versionNumber Int      // Sequential version number
+  data          String   // JSON string of full item data at this version
+  
+  createdById   String?
+  createdAt     DateTime @default(now())
+  
+  @@index([itemId, versionNumber])
+  @@map("item_versions")
+}
+
+// Version History for Projects
+model ProjectVersion {
+  id            String   @id @default(uuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  versionNumber Int      // Sequential version number
+  data          String   // JSON string of full project data at this version
+  
+  createdById   String?
+  createdAt     DateTime @default(now())
+  
+  @@index([projectId, versionNumber])
+  @@map("project_versions")
 }
 
 // Workflow Management
@@ -321,5 +362,49 @@ model SystemSetting {
   
   @@index([category])
   @@map("system_settings")
+}
+
+// Event-driven Lifecycle System
+model LifecycleEvent {
+  id            String   @id @default(uuid())
+  eventType     String   // "WORKFLOW_ADVANCE", "ITEM_UPDATE", "STAGE_CHANGE", etc.
+  entityType    String   // "PROJECT", "ITEM", "WORKFLOW"
+  entityId      String
+  
+  payload       String   // JSON string with event data
+  status        EventStatus @default(PENDING)
+  processedAt   DateTime?
+  errorMessage  String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([eventType, status])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("lifecycle_events")
+}
+
+enum EventStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Multi-tenant Architecture
+model Organization {
+  id            String   @id @default(uuid())
+  name          String
+  domain        String?  @unique // Optional domain for organization
+  isActive      Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  users         User[]
+  projects      Project[]
+  
+  @@map("organizations")
 }
 
