@@ -9,6 +9,7 @@ import { NewProject } from './pages/NewProject';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { RoleManagement } from './pages/RoleManagement';
+import { UserManagement } from './pages/UserManagement';
 import { MyTasks } from './pages/MyTasks';
 import { PricingWorkflow } from './pages/PricingWorkflow';
 import { LogisticsWorkflow } from './pages/LogisticsWorkflow';
@@ -43,6 +44,14 @@ function App() {
                       element={
                         <ProtectedRoute requiredPermission="MANAGE_PERMISSIONS">
                           <RoleManagement />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/user-management"
+                      element={
+                        <ProtectedRoute requiredPermission="MANAGE_USERS">
+                          <UserManagement />
                         </ProtectedRoute>
                       }
                     />
