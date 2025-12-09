@@ -29,15 +29,19 @@ export const RegisterForm: FC = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
+        // Roles endpoint is now public, so this should work without authentication
         const response = await api.get('/roles');
-        setRoles(response.data);
-        // Set default to Category Manager if available
-        const cmRole = response.data.find((r: Role) => r.name === 'Category Manager');
-        if (cmRole) {
-          setFormData((prev) => ({ ...prev, roleId: cmRole.id }));
+        if (response.data) {
+          setRoles(response.data);
+          // Set default to Category Manager if available
+          const cmRole = response.data.find((r: Role) => r.name === 'Category Manager');
+          if (cmRole) {
+            setFormData((prev) => ({ ...prev, roleId: cmRole.id }));
+          }
         }
       } catch (err) {
         console.error('Failed to fetch roles:', err);
+        // Continue without roles - backend will assign default role if none selected
       }
     };
     fetchRoles();
@@ -61,6 +65,8 @@ export const RegisterForm: FC = () => {
 
     try {
       await register(formData.email, formData.name, formData.password, formData.roleId || undefined);
+      // Registration successful - user is now authenticated
+      // Navigate to dashboard (ProtectedRoute will check localStorage if user state not ready)
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
@@ -108,13 +114,14 @@ export const RegisterForm: FC = () => {
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Role
+                Role {roles.length === 0 && <span className="text-gray-500 text-xs">(Loading...)</span>}
               </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={formData.roleId}
                 onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
                 required
+                disabled={roles.length === 0}
               >
                 <option value="">Select a role</option>
                 {roles.map((role) => (
@@ -123,6 +130,11 @@ export const RegisterForm: FC = () => {
                   </option>
                 ))}
               </select>
+              {roles.length === 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  If no roles appear, the backend will assign a default role (Category Manager)
+                </p>
+              )}
             </div>
             <Input
               label="Password"

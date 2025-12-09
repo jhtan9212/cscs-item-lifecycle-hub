@@ -42,6 +42,8 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const register = async (email: string, name: string, password: string, roleId?: string) => {
     const response = await authService.register({ email, name, password, roleId });
+    // authService.register already stores token and user in localStorage
+    // Set user state immediately so ProtectedRoute can access it
     setUser(response.user);
   };
 

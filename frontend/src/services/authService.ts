@@ -105,8 +105,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      authService.logout();
-      window.location.href = '/login';
+      // Don't redirect if we're already on login or register page
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/register') {
+        authService.logout();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -28,7 +28,11 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (!user) {
+  // Check both user state and localStorage to handle race conditions
+  // This ensures that if user just registered, we don't redirect to login
+  const hasStoredUser = localStorage.getItem('user') && localStorage.getItem('token');
+  
+  if (!user && !hasStoredUser) {
     return <Navigate to="/login" replace />;
   }
 
