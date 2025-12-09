@@ -266,9 +266,11 @@ async function main() {
     'VIEW_DASHBOARD',
     'MANAGE_DCS', 'VIEW_DCS',
     'VIEW_ITEM',
+    'UPDATE_ITEM', // Required to update freight strategy on items
     'VIEW_ALL_PROJECTS',
     'SUBMIT_FREIGHT_STRATEGY', 'VIEW_FREIGHT_STRATEGY',
-    'VIEW_PRICING'
+    'VIEW_PRICING',
+    'ADVANCE_WORKFLOW' // Required to advance workflow after submitting freight strategy
   ];
   for (const permName of logisticsPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
