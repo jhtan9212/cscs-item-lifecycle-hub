@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Loader2 } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 interface CommentListProps {
   projectId: string
@@ -16,6 +17,7 @@ interface CommentListProps {
 }
 
 export const CommentList = ({ projectId, comments, onCommentAdded }: CommentListProps) => {
+  const { toast } = useToast()
   const [newComment, setNewComment] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -28,8 +30,17 @@ export const CommentList = ({ projectId, comments, onCommentAdded }: CommentList
       await commentService.create(projectId, newComment.trim())
       setNewComment("")
       onCommentAdded()
+      toast({
+        title: "Comment Added",
+        description: "Your comment has been successfully added.",
+      })
     } catch (error: any) {
-      alert(error.message || "Failed to add comment")
+      const errorMessage = error.response?.data?.error || error.message || "Failed to add comment"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }

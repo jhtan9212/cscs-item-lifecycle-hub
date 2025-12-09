@@ -110,6 +110,31 @@ export class WorkflowEngine {
       return { canAdvance: false, reason: 'Already at final stage' };
     }
 
+    // Role-based authorization: Check if user's role matches the required role of the current step
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { role: true },
+    });
+
+    if (!user) {
+      return { canAdvance: false, reason: 'User not found' };
+    }
+
+    // Admin can always advance
+    if (user.role.isAdmin) {
+      return { canAdvance: true };
+    }
+
+    // If current step has a requiredRole, user's role must match
+    if (currentStep.requiredRole) {
+      if (user.role.name !== currentStep.requiredRole) {
+        return {
+          canAdvance: false,
+          reason: `Only users with role "${currentStep.requiredRole}" can advance from this stage. Current user role: "${user.role.name}"`,
+        };
+      }
+    }
+
     return { canAdvance: true };
   }
 
@@ -266,6 +291,26 @@ export class WorkflowEngine {
 
     if (currentStep.stepOrder === 1) {
       throw new Error('Cannot move back from first stage');
+    }
+
+    // Role-based authorization: Check if user's role matches the required role of the current step
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { role: true },
+    });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Admin can always move back
+    if (!user.role.isAdmin) {
+      // If current step has a requiredRole, user's role must match
+      if (currentStep.requiredRole && user.role.name !== currentStep.requiredRole) {
+        throw new Error(
+          `Only users with role "${currentStep.requiredRole}" can move back from this stage. Current user role: "${user.role.name}"`
+        );
+      }
     }
 
     const project = await prisma.project.findUnique({

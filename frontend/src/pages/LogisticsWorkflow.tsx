@@ -9,11 +9,13 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { usePermissions } from '../hooks/usePermissions';
+import { useToast } from '@/components/ui/use-toast';
 
 export const LogisticsWorkflow: FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();
+  const { toast } = useToast();
   const [project, setProject] = useState<Project | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,8 +86,17 @@ export const LogisticsWorkflow: FC = () => {
         freightBrackets: freight?.freightBrackets ? JSON.parse(freight.freightBrackets) : undefined,
       });
       await loadItems();
+      toast({
+        title: "Freight Strategy Saved",
+        description: "Freight strategy has been successfully saved.",
+      });
     } catch (err: any) {
-      alert(err.message || 'Failed to save freight strategy');
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to save freight strategy';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -99,7 +110,11 @@ export const LogisticsWorkflow: FC = () => {
     });
 
     if (missingStrategy.length > 0) {
-      alert(`Please set Freight Strategy for all items before submitting. Missing: ${missingStrategy.length} item(s)`);
+      toast({
+        title: "Validation Error",
+        description: `Please set Freight Strategy for all items before submitting. Missing: ${missingStrategy.length} item(s)`,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -120,10 +135,18 @@ export const LogisticsWorkflow: FC = () => {
       // Advance workflow
       await projectService.advanceWorkflow(id, 'Freight strategy submitted');
       
-      alert('Freight strategy submitted successfully!');
+      toast({
+        title: "Success",
+        description: "Freight strategy has been submitted successfully!",
+      });
       navigate('/my-tasks');
     } catch (err: any) {
-      alert(err.message || 'Failed to submit freight strategy');
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to submit freight strategy';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }

@@ -20,11 +20,13 @@ import { usePermissions } from "@/hooks/usePermissions"
 import { commentService } from "@/services/commentService"
 import type { Comment } from "@/types/project"
 import { ArrowLeft, AlertCircle, Info } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 export const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { hasPermission } = usePermissions()
+  const { toast } = useToast()
   const [project, setProject] = useState<Project | null>(null)
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
@@ -82,8 +84,17 @@ export const ProjectDetail = () => {
     try {
       await projectService.advanceWorkflow(id, comment)
       await loadProject()
+      toast({
+        title: "Workflow Advanced",
+        description: "The workflow has been successfully advanced to the next stage.",
+      })
     } catch (err: any) {
-      alert(err.message || "Failed to advance workflow")
+      const errorMessage = err.response?.data?.error || err.message || "Failed to advance workflow"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
       throw err
     }
   }
@@ -93,8 +104,17 @@ export const ProjectDetail = () => {
     try {
       await projectService.moveBackWorkflow(id, comment)
       await loadProject()
+      toast({
+        title: "Workflow Moved Back",
+        description: "The workflow has been successfully moved back to the previous stage.",
+      })
     } catch (err: any) {
-      alert(err.message || "Failed to move back workflow")
+      const errorMessage = err.response?.data?.error || err.message || "Failed to move back workflow"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
       throw err
     }
   }
@@ -105,8 +125,17 @@ export const ProjectDetail = () => {
       await itemService.create(id, data)
       await loadItems()
       setShowItemForm(false)
+      toast({
+        title: "Item Created",
+        description: "The item has been successfully created.",
+      })
     } catch (err: any) {
-      alert(err.message || "Failed to create item")
+      const errorMessage = err.response?.data?.error || err.message || "Failed to create item"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
       throw err
     }
   }
@@ -118,8 +147,17 @@ export const ProjectDetail = () => {
       await loadItems()
       setShowItemForm(false)
       setEditingItem(null)
+      toast({
+        title: "Item Updated",
+        description: "The item has been successfully updated.",
+      })
     } catch (err: any) {
-      alert(err.message || "Failed to update item")
+      const errorMessage = err.response?.data?.error || err.message || "Failed to update item"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
       throw err
     }
   }
@@ -129,8 +167,17 @@ export const ProjectDetail = () => {
     try {
       await itemService.delete(itemId)
       await loadItems()
+      toast({
+        title: "Item Deleted",
+        description: "The item has been successfully deleted.",
+      })
     } catch (err: any) {
-      alert(err.message || "Failed to delete item")
+      const errorMessage = err.response?.data?.error || err.message || "Failed to delete item"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
     }
   }
 

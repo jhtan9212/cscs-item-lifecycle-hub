@@ -34,7 +34,9 @@ export const WorkflowControls = ({
       setLoading(true)
       await onAdvance(comment || undefined)
       setComment("")
-    } catch (error) {
+    } catch (error: any) {
+      // Error is already handled by parent component (ProjectDetail) with toast
+      // Just log for debugging
       console.error("Failed to advance workflow:", error)
     } finally {
       setLoading(false)
@@ -46,7 +48,9 @@ export const WorkflowControls = ({
       setLoading(true)
       await onMoveBack(comment || undefined)
       setComment("")
-    } catch (error) {
+    } catch (error: any) {
+      // Error is already handled by parent component (ProjectDetail) with toast
+      // Just log for debugging
       console.error("Failed to move back workflow:", error)
     } finally {
       setLoading(false)

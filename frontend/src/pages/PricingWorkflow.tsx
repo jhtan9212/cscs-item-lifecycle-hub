@@ -9,11 +9,13 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
 import { usePermissions } from '../hooks/usePermissions';
+import { useToast } from '@/components/ui/use-toast';
 
 export const PricingWorkflow: FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();
+  const { toast } = useToast();
   const [project, setProject] = useState<Project | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,8 +87,17 @@ export const PricingWorkflow: FC = () => {
         kinexoPrice: pricing?.kinexoPrice,
       });
       await loadItems();
+      toast({
+        title: "Pricing Saved",
+        description: "Pricing has been successfully saved.",
+      });
     } catch (err: any) {
-      alert(err.message || 'Failed to save pricing');
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to save pricing';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -100,7 +111,11 @@ export const PricingWorkflow: FC = () => {
     });
 
     if (missingPricing.length > 0) {
-      alert(`Please set KINEXO Price for all items before submitting. Missing: ${missingPricing.length} item(s)`);
+      toast({
+        title: "Validation Error",
+        description: `Please set KINEXO Price for all items before submitting. Missing: ${missingPricing.length} item(s)`,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -121,10 +136,18 @@ export const PricingWorkflow: FC = () => {
       // Advance workflow
       await projectService.advanceWorkflow(id, 'Pricing submitted and approved');
       
-      alert('Pricing submitted successfully!');
+      toast({
+        title: "Success",
+        description: "Pricing has been submitted successfully!",
+      });
       navigate('/my-tasks');
     } catch (err: any) {
-      alert(err.message || 'Failed to submit pricing');
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to submit pricing';
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }

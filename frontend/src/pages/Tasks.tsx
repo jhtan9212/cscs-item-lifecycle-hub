@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { formatDate } from "@/utils/formatters"
 import { CheckCircle2, Clock, ListTodo } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 export const Tasks = () => {
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<"all" | "pending" | "completed">("pending")
@@ -35,8 +37,17 @@ export const Tasks = () => {
     try {
       await taskService.completeTask(taskId)
       await loadTasks()
+      toast({
+        title: "Task Completed",
+        description: "The task has been marked as completed.",
+      })
     } catch (err: any) {
-      alert(err.message || "Failed to complete task")
+      const errorMessage = err.response?.data?.error || err.message || "Failed to complete task"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
     }
   }
 
