@@ -17,12 +17,13 @@ export const authenticate = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
+      res.status(401).json({ error: 'No token provided' });
+      return;
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
@@ -36,7 +37,8 @@ export const authenticate = async (
     });
 
     if (!user || !user.isActive) {
-      return res.status(401).json({ error: 'User not found or inactive' });
+      res.status(401).json({ error: 'User not found or inactive' });
+      return;
     }
 
     // Attach user info to request
@@ -47,16 +49,16 @@ export const authenticate = async (
 
     next();
   } catch (error: any) {
-    return res.status(401).json({ error: error.message || 'Invalid token' });
+    res.status(401).json({ error: error.message || 'Invalid token' });
   }
 };
 
 // Optional authentication - doesn't fail if no token
 export const optionalAuth = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
 

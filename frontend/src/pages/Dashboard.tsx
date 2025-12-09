@@ -1,42 +1,36 @@
-import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Badge } from "@/components/ui/badge"
-import { dashboardService, type DashboardStats } from "@/services/dashboardService"
-import { useAuth } from "@/context/AuthContext"
-import { formatDate } from "@/utils/formatters"
-import {
-  FolderKanban,
-  CheckSquare,
-  Bell,
-  TrendingUp,
-  FileText,
-} from "lucide-react"
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { dashboardService, type DashboardStats } from '@/services/dashboardService';
+import { useAuth } from '@/context/AuthContext';
+import { formatDate } from '@/utils/formatters';
+import { FolderKanban, CheckSquare, Bell, TrendingUp, FileText } from 'lucide-react';
 
 export const Dashboard = () => {
-  const { user } = useAuth()
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadStats()
-  }, [])
+    loadStats();
+  }, []);
 
   const loadStats = async () => {
     try {
-      setLoading(true)
-      const data = await dashboardService.getStats().catch(() => null)
+      setLoading(true);
+      const data = await dashboardService.getStats().catch(() => null);
       if (data) {
-        setStats(data)
+        setStats(data);
       }
     } catch (err: any) {
-      console.error("Failed to load dashboard stats:", err)
+      console.error('Failed to load dashboard stats:', err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const StatCard = ({
     title,
@@ -45,11 +39,11 @@ export const Dashboard = () => {
     description,
     className,
   }: {
-    title: string
-    value: number | string
-    icon: React.ElementType
-    description?: string
-    className?: string
+    title: string;
+    value: number | string;
+    icon: React.ElementType;
+    description?: string;
+    className?: string;
   }) => (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -58,12 +52,10 @@ export const Dashboard = () => {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
-        )}
+        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       </CardContent>
     </Card>
-  )
+  );
 
   const StatCardSkeleton = () => (
     <Card>
@@ -75,7 +67,7 @@ export const Dashboard = () => {
         <Skeleton className="h-8 w-16 mt-2" />
       </CardContent>
     </Card>
-  )
+  );
 
   return (
     <div className="space-y-8">
@@ -198,11 +190,11 @@ export const Dashboard = () => {
                     </div>
                     <Badge
                       variant={
-                        project.status === "COMPLETED"
-                          ? "default"
-                          : project.status === "IN_PROGRESS"
-                          ? "secondary"
-                          : "outline"
+                        project.status === 'COMPLETED'
+                          ? 'default'
+                          : project.status === 'IN_PROGRESS'
+                            ? 'secondary'
+                            : 'outline'
                       }
                       className="ml-2 shrink-0"
                     >
@@ -236,5 +228,5 @@ export const Dashboard = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};

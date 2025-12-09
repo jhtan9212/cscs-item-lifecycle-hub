@@ -1,53 +1,53 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import type { Project } from "@/types/project"
-import { projectService } from "@/services/projectService"
-import { ProjectCard } from "@/components/projects/ProjectCard"
-import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuth } from "@/context/AuthContext"
-import { usePermissions } from "@/hooks/usePermissions"
-import { AlertCircle, RefreshCw } from "lucide-react"
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { Project } from '@/types/project';
+import { projectService } from '@/services/projectService';
+import { ProjectCard } from '@/components/projects/ProjectCard';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAuth } from '@/context/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
 export const MyTasks = () => {
-  const { user } = useAuth()
-  const { isAdmin } = usePermissions()
-  const navigate = useNavigate()
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth();
+  const { isAdmin } = usePermissions();
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadAssignedProjects()
-  }, [])
+    loadAssignedProjects();
+  }, []);
 
   const loadAssignedProjects = async () => {
     try {
-      setLoading(true)
-      const data = await projectService.getMyAssigned()
-      setProjects(data)
-      setError(null)
+      setLoading(true);
+      const data = await projectService.getMyAssigned();
+      setProjects(data);
+      setError(null);
     } catch (err: any) {
       if (err.response?.status === 403) {
         setError(
-          "You do not have permission to view assigned projects. Please contact your administrator or log out and log back in to refresh your permissions."
-        )
+          'You do not have permission to view assigned projects. Please contact your administrator or log out and log back in to refresh your permissions.'
+        );
       } else {
-        setError(err.message || "Failed to load assigned projects")
+        setError(err.message || 'Failed to load assigned projects');
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -62,27 +62,27 @@ export const MyTasks = () => {
           </Button>
         </AlertDescription>
       </Alert>
-    )
+    );
   }
 
   const getRoleSpecificMessage = () => {
     if (isAdmin()) {
-      return "Projects requiring attention"
+      return 'Projects requiring attention';
     }
 
-    const roleName = user?.role.name || ""
+    const roleName = user?.role.name || '';
 
     const messages: Record<string, string> = {
-      "Pricing Specialist": `Projects at "KINEXO Pricing" stage requiring pricing review and approval`,
-      "Logistics": `Projects at "Freight Strategy" stage requiring freight strategy submission`,
-      "Strategic Supply Manager": `Projects at "SSM Approval" stage requiring your review and approval`,
-      "Category Manager": `Projects requiring your attention`,
-      "Supplier": `Projects at "Supplier Pricing" stage requiring supplier pricing submission`,
-      "DC Operator": `Projects at DC-related stages requiring distribution center operations`,
-    }
+      'Pricing Specialist': `Projects at "KINEXO Pricing" stage requiring pricing review and approval`,
+      Logistics: `Projects at "Freight Strategy" stage requiring freight strategy submission`,
+      'Strategic Supply Manager': `Projects at "SSM Approval" stage requiring your review and approval`,
+      'Category Manager': `Projects requiring your attention`,
+      Supplier: `Projects at "Supplier Pricing" stage requiring supplier pricing submission`,
+      'DC Operator': `Projects at DC-related stages requiring distribution center operations`,
+    };
 
-    return messages[roleName] || `Projects assigned to ${roleName}`
-  }
+    return messages[roleName] || `Projects assigned to ${roleName}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -103,15 +103,15 @@ export const MyTasks = () => {
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            {projects.length} project{projects.length !== 1 ? "s" : ""} requiring your action
+            {projects.length} project{projects.length !== 1 ? 's' : ''} requiring your action
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
               <div key={project.id} className="space-y-2">
                 <ProjectCard project={project} />
                 <div className="space-y-2">
-                  {project.currentStage === "KINEXO Pricing" &&
-                    user?.role.name === "Pricing Specialist" && (
+                  {project.currentStage === 'KINEXO Pricing' &&
+                    user?.role.name === 'Pricing Specialist' && (
                       <Button
                         onClick={() => navigate(`/projects/${project.id}/pricing`)}
                         className="w-full"
@@ -120,28 +120,30 @@ export const MyTasks = () => {
                         Review Pricing
                       </Button>
                     )}
-                  {project.currentStage === "Freight Strategy" && user?.role.name === "Logistics" && (
-                    <Button
-                      onClick={() => navigate(`/projects/${project.id}/freight`)}
-                      className="w-full"
-                      size="sm"
-                    >
-                      Set Freight Strategy
-                    </Button>
-                  )}
-                  {project.currentStage === "Supplier Pricing" && user?.role.name === "Supplier" && (
-                    <Button
-                      onClick={() => navigate(`/projects/${project.id}`)}
-                      className="w-full"
-                      size="sm"
-                    >
-                      Submit Supplier Pricing
-                    </Button>
-                  )}
-                  {(project.currentStage === "In Transition" ||
-                    project.currentStage === "DC Transition" ||
-                    project.currentStage === "DC Runout") &&
-                    user?.role.name === "DC Operator" && (
+                  {project.currentStage === 'Freight Strategy' &&
+                    user?.role.name === 'Logistics' && (
+                      <Button
+                        onClick={() => navigate(`/projects/${project.id}/freight`)}
+                        className="w-full"
+                        size="sm"
+                      >
+                        Set Freight Strategy
+                      </Button>
+                    )}
+                  {project.currentStage === 'Supplier Pricing' &&
+                    user?.role.name === 'Supplier' && (
+                      <Button
+                        onClick={() => navigate(`/projects/${project.id}`)}
+                        className="w-full"
+                        size="sm"
+                      >
+                        Submit Supplier Pricing
+                      </Button>
+                    )}
+                  {(project.currentStage === 'In Transition' ||
+                    project.currentStage === 'DC Transition' ||
+                    project.currentStage === 'DC Runout') &&
+                    user?.role.name === 'DC Operator' && (
                       <Button
                         onClick={() => navigate(`/projects/${project.id}`)}
                         className="w-full"
@@ -165,5 +167,5 @@ export const MyTasks = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};

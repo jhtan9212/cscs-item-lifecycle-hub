@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
 
-export const getComments = async (req: Request, res: Response) => {
+export const getComments = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { projectId } = req.params;
 
@@ -12,13 +12,13 @@ export const getComments = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(comments);
+    return res.json(comments);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const createComment = async (req: Request, res: Response) => {
+export const createComment = async (req: Request, res: Response): Promise<Response> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -62,9 +62,9 @@ export const createComment = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(201).json(comment);
+    return res.status(201).json(comment);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
 
-export const getAllRoles = async (req: Request, res: Response) => {
+export const getAllRoles = async (_req: Request, res: Response): Promise<Response> => {
   try {
     const roles = await prisma.role.findMany({
       include: {
@@ -16,13 +16,13 @@ export const getAllRoles = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(roles);
+    return res.json(roles);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const getRole = async (req: Request, res: Response) => {
+export const getRole = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -46,13 +46,13 @@ export const getRole = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Role not found' });
     }
 
-    res.json(role);
+    return res.json(role);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const getAllPermissions = async (req: Request, res: Response) => {
+export const getAllPermissions = async (_req: Request, res: Response): Promise<Response> => {
   try {
     const permissions = await prisma.permission.findMany({
       orderBy: [
@@ -61,13 +61,13 @@ export const getAllPermissions = async (req: Request, res: Response) => {
       ],
     });
 
-    res.json(permissions);
+    return res.json(permissions);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const updateRolePermissions = async (req: Request, res: Response) => {
+export const updateRolePermissions = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const { permissions } = req.body; // Array of { permissionId, granted }
@@ -82,7 +82,7 @@ export const updateRolePermissions = async (req: Request, res: Response) => {
     });
 
     // Create new permissions
-    const rolePermissions = await Promise.all(
+    await Promise.all(
       permissions.map((perm: { permissionId: string; granted: boolean }) =>
         prisma.rolePermission.create({
           data: {
@@ -105,9 +105,9 @@ export const updateRolePermissions = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(role);
+    return res.json(role);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

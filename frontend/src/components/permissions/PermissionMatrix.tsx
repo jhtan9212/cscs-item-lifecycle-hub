@@ -1,151 +1,153 @@
-import { useState, useEffect } from "react"
-import { roleService, type Role, type Permission } from "@/services/roleService"
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { useAuth } from "@/context/AuthContext"
-import { Info, Loader2, Save, AlertCircle } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+import { useState, useEffect } from 'react';
+import { roleService, type Role, type Permission } from '@/services/roleService';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useAuth } from '@/context/AuthContext';
+import { Info, Loader2, Save, AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 interface PermissionMatrixProps {
-  roleId: string
-  onUpdate?: () => void
+  roleId: string;
+  onUpdate?: () => void;
 }
 
 export const PermissionMatrix = ({ roleId, onUpdate }: PermissionMatrixProps) => {
-  const { user, refreshUser } = useAuth()
-  const { toast } = useToast()
-  const [role, setRole] = useState<Role | null>(null)
-  const [permissions, setPermissions] = useState<Permission[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const { user, refreshUser } = useAuth();
+  const { toast } = useToast();
+  const [role, setRole] = useState<Role | null>(null);
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData()
-  }, [roleId])
+    loadData();
+  }, [roleId]);
 
   const loadData = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const [roleData, permissionsData] = await Promise.all([
         roleService.getById(roleId),
         roleService.getAllPermissions(),
-      ])
+      ]);
 
-      setRole(roleData)
-      setPermissions(permissionsData)
-      setError(null)
+      setRole(roleData);
+      setPermissions(permissionsData);
+      setError(null);
     } catch (err: any) {
-      setError(err.message || "Failed to load permissions")
+      setError(err.message || 'Failed to load permissions');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const togglePermission = (permissionId: string) => {
-    if (!role || role.isAdmin) return
+    if (!role || role.isAdmin) return;
 
-    const existingPermission = role.rolePermissions?.find(
-      (rp) => rp.permissionId === permissionId
-    )
+    const existingPermission = role.rolePermissions?.find((rp) => rp.permissionId === permissionId);
 
     if (!role.rolePermissions) {
-      role.rolePermissions = []
+      role.rolePermissions = [];
     }
 
     if (existingPermission) {
-      existingPermission.granted = !existingPermission.granted
+      existingPermission.granted = !existingPermission.granted;
     } else {
       role.rolePermissions.push({
-        id: "",
+        id: '',
         roleId: role.id,
         permissionId,
         granted: true,
-      } as any)
+      } as any);
     }
 
-    setRole({ ...role })
-  }
+    setRole({ ...role });
+  };
 
   const handleSave = async () => {
-    if (!role) return
+    if (!role) return;
 
     try {
-      setSaving(true)
-      setError(null)
-      setSuccess(null)
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
       const permissionsToSave = permissions.map((perm) => {
-        const rolePerm = role.rolePermissions?.find((rp) => rp.permissionId === perm.id)
+        const rolePerm = role.rolePermissions?.find((rp) => rp.permissionId === perm.id);
         return {
           permissionId: perm.id,
           granted: rolePerm?.granted ?? false,
-        }
-      })
+        };
+      });
 
-      await roleService.updatePermissions(role.id, permissionsToSave)
-      await loadData()
+      await roleService.updatePermissions(role.id, permissionsToSave);
+      await loadData();
 
       // If user is managing their own role, refresh their user data
       if (user && user.roleId === role.id) {
-        await refreshUser()
+        await refreshUser();
       }
 
-      setSuccess("Permissions updated successfully!")
+      setSuccess('Permissions updated successfully!');
       toast({
-        title: "Success",
-        description: "Permissions updated successfully! Users with this role may need to logout and login again to see changes.",
-      })
-      onUpdate?.()
+        title: 'Success',
+        description:
+          'Permissions updated successfully! Users with this role may need to logout and login again to see changes.',
+      });
+      onUpdate?.();
 
       // Clear success message after 5 seconds
-      setTimeout(() => setSuccess(null), 5000)
+      setTimeout(() => setSuccess(null), 5000);
     } catch (err: any) {
-      setError(err.message || "Failed to save permissions")
+      setError(err.message || 'Failed to save permissions');
       toast({
-        title: "Error",
-        description: err.message || "Failed to save permissions",
-        variant: "destructive",
-      })
+        title: 'Error',
+        description: err.message || 'Failed to save permissions',
+        variant: 'destructive',
+      });
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   if (error || !role) {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>{error || "Role not found"}</AlertDescription>
+        <AlertDescription>{error || 'Role not found'}</AlertDescription>
       </Alert>
-    )
+    );
   }
 
   // Group permissions by category
-  const permissionsByCategory = permissions.reduce((acc, perm) => {
-    if (!acc[perm.category]) {
-      acc[perm.category] = []
-    }
-    acc[perm.category].push(perm)
-    return acc
-  }, {} as Record<string, Permission[]>)
+  const permissionsByCategory = permissions.reduce(
+    (acc, perm) => {
+      if (!acc[perm.category]) {
+        acc[perm.category] = [];
+      }
+      acc[perm.category].push(perm);
+      return acc;
+    },
+    {} as Record<string, Permission[]>
+  );
 
   const isPermissionGranted = (permissionId: string): boolean => {
-    if (role.isAdmin) return true
-    const rolePerm = role.rolePermissions?.find((rp) => rp.permissionId === permissionId)
-    return rolePerm?.granted ?? false
-  }
+    if (role.isAdmin) return true;
+    const rolePerm = role.rolePermissions?.find((rp) => rp.permissionId === permissionId);
+    return rolePerm?.granted ?? false;
+  };
 
   return (
     <Card>
@@ -202,8 +204,8 @@ export const PermissionMatrix = ({ roleId, onUpdate }: PermissionMatrixProps) =>
               <h4 className="text-md font-semibold mb-3">{category}</h4>
               <div className="space-y-2">
                 {categoryPermissions.map((permission) => {
-                  const granted = isPermissionGranted(permission.id)
-                  const disabled = role.isAdmin
+                  const granted = isPermissionGranted(permission.id);
+                  const disabled = role.isAdmin;
 
                   return (
                     <div
@@ -227,7 +229,7 @@ export const PermissionMatrix = ({ roleId, onUpdate }: PermissionMatrixProps) =>
                         className="ml-4"
                       />
                     </div>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -235,5 +237,5 @@ export const PermissionMatrix = ({ roleId, onUpdate }: PermissionMatrixProps) =>
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

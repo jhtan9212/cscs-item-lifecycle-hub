@@ -8,4 +8,3 @@ export const Projects: FC = () => {
     </div>
   );
 };
-

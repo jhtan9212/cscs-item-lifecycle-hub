@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
 
-export const getAuditLogs = async (req: Request, res: Response) => {
+export const getAuditLogs = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { projectId, userId, action, entityType, startDate, endDate, limit, offset } = req.query;
 
@@ -70,18 +70,18 @@ export const getAuditLogs = async (req: Request, res: Response) => {
       prisma.auditLog.count({ where }),
     ]);
 
-    res.json({
+    return res.json({
       auditLogs,
       total,
       limit: limitNum,
       offset: offsetNum,
     });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const getAuditLog = async (req: Request, res: Response) => {
+export const getAuditLog = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -114,13 +114,13 @@ export const getAuditLog = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Audit log not found' });
     }
 
-    res.json(auditLog);
+    return res.json(auditLog);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const getAuditLogFilters = async (req: Request, res: Response) => {
+export const getAuditLogFilters = async (_req: Request, res: Response): Promise<Response> => {
   try {
     // Get distinct values for filters
     const [actions, entityTypes, users] = await Promise.all([
@@ -144,13 +144,13 @@ export const getAuditLogFilters = async (req: Request, res: Response) => {
       }),
     ]);
 
-    res.json({
+    return res.json({
       actions: actions.map((a) => a.action),
       entityTypes: entityTypes.map((e) => e.entityType),
       users,
     });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

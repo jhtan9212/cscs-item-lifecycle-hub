@@ -3,27 +3,66 @@ import cors from 'cors';
 import { config } from './config/environment';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
+import { securityHeaders, rateLimiter } from './middleware/security';
 import routes from './routes';
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: config.corsOrigin,
-  credentials: true,
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Security middleware (must be first)
+app.use(securityHeaders);
+app.use(rateLimiter);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// CORS configuration
+app.use(
+  cors({
+    origin: config.corsOrigin,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Request logging middleware
+app.use((req, _res, next) => {
+  logger.info('Incoming request', {
+    method: req.method,
+    path: req.path,
+    ip: req.ip,
+  });
+  next();
+});
+
+// Health check endpoint
+app.get('/health', (_req, res) => {
+  res.json({
+    success: true,
+    data: {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      environment: config.nodeEnv,
+    },
+  });
 });
 
 // API Routes
 app.use('/api', routes);
 
-// Error handling
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      message: 'Route not found',
+      path: req.path,
+    },
+  });
+});
+
+// Error handling (must be last)
 app.use(errorHandler);
 
 // Start server

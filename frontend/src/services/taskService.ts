@@ -21,12 +21,16 @@ export interface Task {
 }
 
 export const taskService = {
-  getAll: async (options?: { status?: string; limit?: number; offset?: number }): Promise<Task[]> => {
+  getAll: async (options?: {
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<Task[]> => {
     const params = new URLSearchParams();
     if (options?.status) params.append('status', options.status);
     if (options?.limit) params.append('limit', options.limit.toString());
     if (options?.offset) params.append('offset', options.offset.toString());
-    
+
     const response = await api.get<Task[]>(`/tasks?${params.toString()}`);
     return response.data;
   },
@@ -51,4 +55,3 @@ export const taskService = {
     return response.data;
   },
 };
-

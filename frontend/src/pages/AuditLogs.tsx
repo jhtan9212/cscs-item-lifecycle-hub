@@ -1,10 +1,15 @@
-import { useState, useEffect, Fragment } from "react"
-import { auditLogService, type AuditLog, type AuditLogFilters, type FilterOptions } from "@/services/auditLogService"
-import { projectService } from "@/services/projectService"
-import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, Fragment } from 'react';
+import {
+  auditLogService,
+  type AuditLog,
+  type AuditLogFilters,
+  type FilterOptions,
+} from '@/services/auditLogService';
+import { projectService } from '@/services/projectService';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -12,124 +17,131 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from '@/components/ui/table';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { formatDateTime } from "@/utils/formatters"
-import type { Project } from "@/types/project"
-import { Filter, ChevronDown, ChevronUp, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react"
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { formatDateTime } from '@/utils/formatters';
+import type { Project } from '@/types/project';
+import {
+  Filter,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 
 export const AuditLogs = () => {
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([])
-  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null)
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [total, setTotal] = useState(0)
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<AuditLogFilters>({
     limit: 50,
     offset: 0,
-  })
-  const [showFilters, setShowFilters] = useState(false)
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    loadData()
-    loadFilterOptions()
-    loadProjects()
-  }, [])
+    loadData();
+    loadFilterOptions();
+    loadProjects();
+  }, []);
 
   useEffect(() => {
-    loadData()
-  }, [filters])
+    loadData();
+  }, [filters]);
 
   const loadData = async () => {
     try {
-      setLoading(true)
-      const response = await auditLogService.getAll(filters)
-      setAuditLogs(response.auditLogs)
-      setTotal(response.total)
-      setError(null)
+      setLoading(true);
+      const response = await auditLogService.getAll(filters);
+      setAuditLogs(response.auditLogs);
+      setTotal(response.total);
+      setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to load audit logs")
+      setError(err.response?.data?.error || err.message || 'Failed to load audit logs');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const loadFilterOptions = async () => {
     try {
-      const options = await auditLogService.getFilters()
-      setFilterOptions(options)
+      const options = await auditLogService.getFilters();
+      setFilterOptions(options);
     } catch (err: any) {
-      console.error("Failed to load filter options:", err)
+      console.error('Failed to load filter options:', err);
     }
-  }
+  };
 
   const loadProjects = async () => {
     try {
-      const data = await projectService.getAll()
-      setProjects(data)
+      const data = await projectService.getAll();
+      setProjects(data);
     } catch (err: any) {
-      console.error("Failed to load projects:", err)
+      console.error('Failed to load projects:', err);
     }
-  }
+  };
 
   const handleFilterChange = (key: keyof AuditLogFilters, value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value || undefined,
       offset: 0,
-    }))
-  }
+    }));
+  };
 
   const clearFilters = () => {
     setFilters({
       limit: 50,
       offset: 0,
-    })
-  }
+    });
+  };
 
   const handlePageChange = (newOffset: number) => {
     setFilters((prev) => ({
       ...prev,
       offset: newOffset,
-    }))
-  }
+    }));
+  };
 
   const parseChanges = (changes?: string): any => {
-    if (!changes) return null
+    if (!changes) return null;
     try {
-      return JSON.parse(changes)
+      return JSON.parse(changes);
     } catch {
-      return changes
+      return changes;
     }
-  }
+  };
 
   const toggleRow = (logId: string) => {
-    const newExpanded = new Set(expandedRows)
+    const newExpanded = new Set(expandedRows);
     if (newExpanded.has(logId)) {
-      newExpanded.delete(logId)
+      newExpanded.delete(logId);
     } else {
-      newExpanded.add(logId)
+      newExpanded.add(logId);
     }
-    setExpandedRows(newExpanded)
-  }
+    setExpandedRows(newExpanded);
+  };
 
   if (loading && auditLogs.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   return (
@@ -143,7 +155,7 @@ export const AuditLogs = () => {
         </div>
         <Button onClick={() => setShowFilters(!showFilters)} variant="outline">
           <Filter className="mr-2 h-4 w-4" />
-          {showFilters ? "Hide Filters" : "Show Filters"}
+          {showFilters ? 'Hide Filters' : 'Show Filters'}
         </Button>
       </div>
 
@@ -165,8 +177,8 @@ export const AuditLogs = () => {
               <div className="space-y-2">
                 <Label>Project</Label>
                 <Select
-                  value={filters.projectId || ""}
-                  onValueChange={(value) => handleFilterChange("projectId", value || undefined)}
+                  value={filters.projectId || ''}
+                  onValueChange={(value) => handleFilterChange('projectId', value || undefined)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All Projects" />
@@ -184,8 +196,8 @@ export const AuditLogs = () => {
               <div className="space-y-2">
                 <Label>User</Label>
                 <Select
-                  value={filters.userId || ""}
-                  onValueChange={(value) => handleFilterChange("userId", value || undefined)}
+                  value={filters.userId || ''}
+                  onValueChange={(value) => handleFilterChange('userId', value || undefined)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All Users" />
@@ -203,8 +215,8 @@ export const AuditLogs = () => {
               <div className="space-y-2">
                 <Label>Action</Label>
                 <Select
-                  value={filters.action || ""}
-                  onValueChange={(value) => handleFilterChange("action", value || undefined)}
+                  value={filters.action || ''}
+                  onValueChange={(value) => handleFilterChange('action', value || undefined)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All Actions" />
@@ -222,8 +234,8 @@ export const AuditLogs = () => {
               <div className="space-y-2">
                 <Label>Entity Type</Label>
                 <Select
-                  value={filters.entityType || ""}
-                  onValueChange={(value) => handleFilterChange("entityType", value || undefined)}
+                  value={filters.entityType || ''}
+                  onValueChange={(value) => handleFilterChange('entityType', value || undefined)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All Types" />
@@ -243,14 +255,14 @@ export const AuditLogs = () => {
                 <div className="space-y-2">
                   <Input
                     type="date"
-                    value={filters.startDate || ""}
-                    onChange={(e) => handleFilterChange("startDate", e.target.value || undefined)}
+                    value={filters.startDate || ''}
+                    onChange={(e) => handleFilterChange('startDate', e.target.value || undefined)}
                     className="text-sm"
                   />
                   <Input
                     type="date"
-                    value={filters.endDate || ""}
-                    onChange={(e) => handleFilterChange("endDate", e.target.value || undefined)}
+                    value={filters.endDate || ''}
+                    onChange={(e) => handleFilterChange('endDate', e.target.value || undefined)}
                     className="text-sm"
                   />
                 </div>
@@ -288,8 +300,8 @@ export const AuditLogs = () => {
                   </TableRow>
                 ) : (
                   auditLogs.map((log) => {
-                    const changes = parseChanges(log.changes)
-                    const isExpanded = expandedRows.has(log.id)
+                    const changes = parseChanges(log.changes);
+                    const isExpanded = expandedRows.has(log.id);
                     return (
                       <Fragment key={log.id}>
                         <TableRow className="hover:bg-accent/50">
@@ -299,7 +311,7 @@ export const AuditLogs = () => {
                           <TableCell>
                             <div>
                               <div className="text-sm font-medium">
-                                {log.user?.name || "Unknown User"}
+                                {log.user?.name || 'Unknown User'}
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 {log.user?.email} ({log.user?.role.name})
@@ -315,8 +327,12 @@ export const AuditLogs = () => {
                           <TableCell>
                             {log.project ? (
                               <div>
-                                <div className="text-sm font-medium">{log.project.projectNumber}</div>
-                                <div className="text-sm text-muted-foreground">{log.project.name}</div>
+                                <div className="text-sm font-medium">
+                                  {log.project.projectNumber}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {log.project.name}
+                                </div>
                               </div>
                             ) : (
                               <span className="text-sm text-muted-foreground">—</span>
@@ -359,7 +375,7 @@ export const AuditLogs = () => {
                           </TableRow>
                         )}
                       </Fragment>
-                    )
+                    );
                   })
                 )}
               </TableBody>
@@ -369,7 +385,7 @@ export const AuditLogs = () => {
           {total > (filters.limit || 50) && (
             <div className="px-6 py-4 border-t flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                Showing {filters.offset || 0} to{" "}
+                Showing {filters.offset || 0} to{' '}
                 {Math.min((filters.offset || 0) + (filters.limit || 50), total)} of {total} entries
               </div>
               <div className="flex gap-2">
@@ -399,5 +415,5 @@ export const AuditLogs = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};

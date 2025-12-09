@@ -46,4 +46,3 @@ export const FIELD_OWNERSHIP = {
     color: '#ec4899',
   },
 } as const;
-

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { hashPassword } from '../utils/auth';
 
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllUsers = async (_req: Request, res: Response): Promise<Response> => {
   try {
     const users = await prisma.user.findMany({
       include: {
@@ -16,13 +16,13 @@ export const getAllUsers = async (req: Request, res: Response) => {
     // Remove passwords from response
     const usersWithoutPasswords = users.map(({ password, ...user }) => user);
 
-    res.json(usersWithoutPasswords);
+    return res.json(usersWithoutPasswords);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const getUser = async (req: Request, res: Response) => {
+export const getUser = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -46,13 +46,13 @@ export const getUser = async (req: Request, res: Response) => {
     }
 
     const { password, ...userWithoutPassword } = user;
-    res.json(userWithoutPassword);
+    return res.json(userWithoutPassword);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const { name, email, roleId, isActive } = req.body;
@@ -101,16 +101,16 @@ export const updateUser = async (req: Request, res: Response) => {
     });
 
     const { password, ...userWithoutPassword } = user;
-    res.json(userWithoutPassword);
+    return res.json(userWithoutPassword);
   } catch (error: any) {
     if (error.code === 'P2002') {
       return res.status(400).json({ error: 'Email already in use' });
     }
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { name, email, password, roleId } = req.body;
 
@@ -177,16 +177,16 @@ export const createUser = async (req: Request, res: Response) => {
     });
 
     const { password: _, ...userWithoutPassword } = user;
-    res.status(201).json(userWithoutPassword);
+    return res.status(201).json(userWithoutPassword);
   } catch (error: any) {
     if (error.code === 'P2002') {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const changePassword = async (req: Request, res: Response) => {
+export const changePassword = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const { newPassword } = req.body;
@@ -202,13 +202,13 @@ export const changePassword = async (req: Request, res: Response) => {
       data: { password: hashedPassword },
     });
 
-    res.json({ message: 'Password updated successfully' });
+    return res.json({ message: 'Password updated successfully' });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const deactivateUser = async (req: Request, res: Response) => {
+export const deactivateUser = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -234,13 +234,13 @@ export const deactivateUser = async (req: Request, res: Response) => {
     });
 
     const { password, ...userWithoutPassword } = updatedUser;
-    res.json(userWithoutPassword);
+    return res.json(userWithoutPassword);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const activateUser = async (req: Request, res: Response) => {
+export const activateUser = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -261,9 +261,9 @@ export const activateUser = async (req: Request, res: Response) => {
     });
 
     const { password, ...userWithoutPassword } = updatedUser;
-    res.json(userWithoutPassword);
+    return res.json(userWithoutPassword);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

@@ -123,14 +123,18 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
             type="number"
             step="0.01"
             value={formData.supplierPrice || ''}
-            onChange={(e) => setFormData({ ...formData, supplierPrice: parseFloat(e.target.value) || undefined })}
+            onChange={(e) =>
+              setFormData({ ...formData, supplierPrice: parseFloat(e.target.value) || undefined })
+            }
           />
           <Input
             label="KINEXO Price"
             type="number"
             step="0.01"
             value={formData.kinexoPrice || ''}
-            onChange={(e) => setFormData({ ...formData, kinexoPrice: parseFloat(e.target.value) || undefined })}
+            onChange={(e) =>
+              setFormData({ ...formData, kinexoPrice: parseFloat(e.target.value) || undefined })
+            }
           />
         </div>
       </div>
@@ -152,7 +156,13 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
             <textarea
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={4}
-              value={typeof formData.freightBrackets === 'string' ? formData.freightBrackets : (formData.freightBrackets ? JSON.stringify(formData.freightBrackets, null, 2) : '')}
+              value={
+                typeof formData.freightBrackets === 'string'
+                  ? formData.freightBrackets
+                  : formData.freightBrackets
+                    ? JSON.stringify(formData.freightBrackets, null, 2)
+                    : ''
+              }
               onChange={(e) => {
                 try {
                   const parsed = e.target.value ? JSON.parse(e.target.value) : null;
@@ -183,7 +193,9 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
             type="number"
             step="0.01"
             value={formData.supplierPrice || ''}
-            onChange={(e) => setFormData({ ...formData, supplierPrice: parseFloat(e.target.value) || undefined })}
+            onChange={(e) =>
+              setFormData({ ...formData, supplierPrice: parseFloat(e.target.value) || undefined })
+            }
           />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -192,7 +204,13 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
             <textarea
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={4}
-              value={typeof formData.supplierSpecs === 'string' ? formData.supplierSpecs : (formData.supplierSpecs ? JSON.stringify(formData.supplierSpecs, null, 2) : '')}
+              value={
+                typeof formData.supplierSpecs === 'string'
+                  ? formData.supplierSpecs
+                  : formData.supplierSpecs
+                    ? JSON.stringify(formData.supplierSpecs, null, 2)
+                    : ''
+              }
               onChange={(e) => {
                 try {
                   const parsed = e.target.value ? JSON.parse(e.target.value) : null;
@@ -220,9 +238,7 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
             placeholder="e.g., In Stock, Transitioning, Runout"
           />
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              DC Notes
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">DC Notes</label>
             <textarea
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={3}
@@ -245,4 +261,3 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
     </form>
   );
 };
-

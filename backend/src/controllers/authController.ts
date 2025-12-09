@@ -4,7 +4,7 @@ import prisma from '../config/database';
 import { hashPassword, comparePassword, generateToken } from '../utils/auth';
 import { logger } from '../utils/logger';
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<Response> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -73,17 +73,17 @@ export const register = async (req: Request, res: Response) => {
 
     logger.info(`User registered: ${user.email}`);
 
-    res.status(201).json({
+    return res.status(201).json({
       user: userWithoutPassword,
       token,
     });
   } catch (error: any) {
     logger.error('Registration error:', error);
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<Response> => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -142,17 +142,17 @@ export const login = async (req: Request, res: Response) => {
 
     logger.info(`User logged in: ${user.email}`);
 
-    res.json({
+    return res.json({
       user: userWithoutPassword,
       token,
     });
   } catch (error: any) {
     logger.error('Login error:', error);
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const getCurrentUser = async (req: Request, res: Response) => {
+export const getCurrentUser = async (req: Request, res: Response): Promise<Response> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
@@ -179,9 +179,9 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 
     const { password: _, ...userWithoutPassword } = user;
 
-    res.json(userWithoutPassword);
+    return res.json(userWithoutPassword);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

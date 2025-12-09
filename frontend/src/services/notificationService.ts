@@ -14,12 +14,16 @@ export interface Notification {
 }
 
 export const notificationService = {
-  getAll: async (options?: { unreadOnly?: boolean; limit?: number; offset?: number }): Promise<Notification[]> => {
+  getAll: async (options?: {
+    unreadOnly?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<Notification[]> => {
     const params = new URLSearchParams();
     if (options?.unreadOnly) params.append('unreadOnly', 'true');
     if (options?.limit) params.append('limit', options.limit.toString());
     if (options?.offset) params.append('offset', options.offset.toString());
-    
+
     const response = await api.get<Notification[]>(`/notifications?${params.toString()}`);
     return response.data;
   },
@@ -37,4 +41,3 @@ export const notificationService = {
     await api.post('/notifications/read/all');
   },
 };
-

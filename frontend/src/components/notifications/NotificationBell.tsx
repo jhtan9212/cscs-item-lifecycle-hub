@@ -1,73 +1,73 @@
-import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import { Bell } from "lucide-react"
-import { notificationService, type Notification } from "@/services/notificationService"
-import { formatDateTime } from "@/utils/formatters"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Bell } from 'lucide-react';
+import { notificationService, type Notification } from '@/services/notificationService';
+import { formatDateTime } from '@/utils/formatters';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 export const NotificationBell = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadNotifications()
-    const interval = setInterval(loadNotifications, 30000)
-    return () => clearInterval(interval)
-  }, [])
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const loadNotifications = async () => {
     try {
       const [allNotifications, count] = await Promise.all([
         notificationService.getAll({ limit: 10, unreadOnly: false }),
         notificationService.getUnreadCount(),
-      ])
-      setNotifications(allNotifications)
-      setUnreadCount(count)
+      ]);
+      setNotifications(allNotifications);
+      setUnreadCount(count);
     } catch (error) {
-      console.error("Failed to load notifications:", error)
+      console.error('Failed to load notifications:', error);
     }
-  }
+  };
 
   const handleMarkAsRead = async (id: string) => {
     try {
-      await notificationService.markAsRead(id)
-      await loadNotifications()
+      await notificationService.markAsRead(id);
+      await loadNotifications();
     } catch (error) {
-      console.error("Failed to mark notification as read:", error)
+      console.error('Failed to mark notification as read:', error);
     }
-  }
+  };
 
   const handleMarkAllAsRead = async () => {
     try {
-      setLoading(true)
-      await notificationService.markAllAsRead()
-      await loadNotifications()
+      setLoading(true);
+      await notificationService.markAllAsRead();
+      await loadNotifications();
     } catch (error) {
-      console.error("Failed to mark all as read:", error)
+      console.error('Failed to mark all as read:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getNotificationTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      WORKFLOW_ADVANCED: "Workflow Updated",
-      TASK_ASSIGNED: "Task Assigned",
-      PROJECT_CREATED: "Project Created",
-      ITEM_UPDATED: "Item Updated",
-    }
-    return labels[type] || "Notification"
-  }
+      WORKFLOW_ADVANCED: 'Workflow Updated',
+      TASK_ASSIGNED: 'Task Assigned',
+      PROJECT_CREATED: 'Project Created',
+      ITEM_UPDATED: 'Item Updated',
+    };
+    return labels[type] || 'Notification';
+  };
 
   return (
     <DropdownMenu>
@@ -79,7 +79,7 @@ export const NotificationBell = () => {
               variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
             >
-              {unreadCount > 9 ? "9+" : unreadCount}
+              {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
           )}
           <span className="sr-only">Notifications</span>
@@ -99,8 +99,8 @@ export const NotificationBell = () => {
             {unreadCount > 0 && (
               <button
                 onClick={(e) => {
-                  e.stopPropagation()
-                  handleMarkAllAsRead()
+                  e.stopPropagation();
+                  handleMarkAllAsRead();
                 }}
                 disabled={loading}
                 className="text-xs text-primary hover:underline disabled:opacity-50"
@@ -113,30 +113,24 @@ export const NotificationBell = () => {
         <DropdownMenuSeparator />
         <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">
-              No notifications
-            </div>
+            <div className="p-8 text-center text-sm text-muted-foreground">No notifications</div>
           ) : (
             <div className="divide-y">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={cn(
-                    "p-3 hover:bg-accent cursor-pointer transition-colors",
-                    !notification.isRead && "bg-accent/50"
+                    'p-3 hover:bg-accent cursor-pointer transition-colors',
+                    !notification.isRead && 'bg-accent/50'
                   )}
-                  onClick={() =>
-                    !notification.isRead && handleMarkAsRead(notification.id)
-                  }
+                  onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">
                         {getNotificationTypeLabel(notification.type)}
                       </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {notification.message}
-                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {formatDateTime(notification.createdAt)}
                       </p>
@@ -152,5 +146,5 @@ export const NotificationBell = () => {
         </ScrollArea>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
-}
+  );
+};

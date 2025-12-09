@@ -1,22 +1,22 @@
-import type { Item } from "@/types/item"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { usePermissions } from "@/hooks/usePermissions"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import type { Item } from '@/types/item';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { usePermissions } from '@/hooks/usePermissions';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 
 interface ItemListProps {
-  items: Item[]
-  onEdit: (item: Item) => void
-  onDelete: (itemId: string) => void
-  onCreateNew: () => void
+  items: Item[];
+  onEdit: (item: Item) => void;
+  onDelete: (itemId: string) => void;
+  onCreateNew: () => void;
 }
 
 export const ItemList = ({ items, onEdit, onDelete, onCreateNew }: ItemListProps) => {
-  const { hasPermission } = usePermissions()
-  const canCreate = hasPermission("CREATE_ITEM")
-  const canUpdate = hasPermission("UPDATE_ITEM")
-  const canDelete = hasPermission("DELETE_ITEM")
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission('CREATE_ITEM');
+  const canUpdate = hasPermission('UPDATE_ITEM');
+  const canDelete = hasPermission('DELETE_ITEM');
 
   return (
     <div className="space-y-4">
@@ -82,5 +82,5 @@ export const ItemList = ({ items, onEdit, onDelete, onCreateNew }: ItemListProps
         </div>
       )}
     </div>
-  )
-}
+  );
+};

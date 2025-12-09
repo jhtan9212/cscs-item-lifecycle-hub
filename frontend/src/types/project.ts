@@ -1,7 +1,14 @@
 import type { Item } from './item';
 
 export type LifecycleType = 'NEW_ITEM' | 'TRANSITIONING_ITEM' | 'DELETING_ITEM';
-export type ProjectStatus = 'DRAFT' | 'IN_PROGRESS' | 'WAITING_ON_SUPPLIER' | 'WAITING_ON_DISTRIBUTOR' | 'INTERNAL_REVIEW' | 'COMPLETED' | 'REJECTED';
+export type ProjectStatus =
+  | 'DRAFT'
+  | 'IN_PROGRESS'
+  | 'WAITING_ON_SUPPLIER'
+  | 'WAITING_ON_DISTRIBUTOR'
+  | 'INTERNAL_REVIEW'
+  | 'COMPLETED'
+  | 'REJECTED';
 export type StepStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED' | 'SKIPPED';
 
 export interface Project {
@@ -59,4 +66,3 @@ export interface Comment {
     email: string;
   };
 }
-

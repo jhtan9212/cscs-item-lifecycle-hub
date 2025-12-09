@@ -1,50 +1,50 @@
-import { useState } from "react"
-import type { Comment } from "@/types/project"
-import { commentService } from "@/services/commentService"
-import { formatDate } from "@/utils/formatters"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Loader2 } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+import { useState } from 'react';
+import type { Comment } from '@/types/project';
+import { commentService } from '@/services/commentService';
+import { formatDate } from '@/utils/formatters';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 interface CommentListProps {
-  projectId: string
-  comments: Comment[]
-  onCommentAdded: () => void
+  projectId: string;
+  comments: Comment[];
+  onCommentAdded: () => void;
 }
 
 export const CommentList = ({ projectId, comments, onCommentAdded }: CommentListProps) => {
-  const { toast } = useToast()
-  const [newComment, setNewComment] = useState("")
-  const [loading, setLoading] = useState(false)
+  const { toast } = useToast();
+  const [newComment, setNewComment] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newComment.trim()) return
+    e.preventDefault();
+    if (!newComment.trim()) return;
 
     try {
-      setLoading(true)
-      await commentService.create(projectId, newComment.trim())
-      setNewComment("")
-      onCommentAdded()
+      setLoading(true);
+      await commentService.create(projectId, newComment.trim());
+      setNewComment('');
+      onCommentAdded();
       toast({
-        title: "Comment Added",
-        description: "Your comment has been successfully added.",
-      })
+        title: 'Comment Added',
+        description: 'Your comment has been successfully added.',
+      });
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.message || "Failed to add comment"
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to add comment';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
-      })
+        variant: 'destructive',
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -68,7 +68,7 @@ export const CommentList = ({ projectId, comments, onCommentAdded }: CommentList
                   Adding...
                 </>
               ) : (
-                "Add Comment"
+                'Add Comment'
               )}
             </Button>
           </form>
@@ -90,10 +90,12 @@ export const CommentList = ({ projectId, comments, onCommentAdded }: CommentList
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-medium">
-                          {comment.createdBy?.name || comment.userName || "Unknown User"}
+                          {comment.createdBy?.name || comment.userName || 'Unknown User'}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <p className="text-sm text-muted-foreground">{formatDate(comment.createdAt)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDate(comment.createdAt)}
+                          </p>
                           {comment.isInternal && (
                             <Badge variant="secondary" className="text-xs">
                               Internal
@@ -112,5 +114,5 @@ export const CommentList = ({ projectId, comments, onCommentAdded }: CommentList
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};

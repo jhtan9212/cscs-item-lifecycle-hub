@@ -1,36 +1,36 @@
-import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { useAuth } from "@/context/AuthContext"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AuthLayout } from "@/components/layouts/AuthLayout"
-import { AlertCircle } from "lucide-react"
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AuthLayout } from '@/components/layouts/AuthLayout';
+import { AlertCircle } from 'lucide-react';
 
 export const LoginForm = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
-      await login(email, password)
-      navigate("/")
+      await login(email, password);
+      navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || "Login failed. Please check your credentials.")
+      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <AuthLayout
@@ -41,7 +41,7 @@ export const LoginForm = () => {
         <CardHeader>
           <CardTitle>Sign In</CardTitle>
           <CardDescription>
-            Don't have an account?{" "}
+            Don't have an account?{' '}
             <Link to="/register" className="text-primary hover:underline font-medium">
               Create a new account
             </Link>
@@ -83,7 +83,7 @@ export const LoginForm = () => {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? 'Signing in...' : 'Sign in'}
             </Button>
 
             <div className="rounded-lg bg-muted p-4">
@@ -98,5 +98,5 @@ export const LoginForm = () => {
         </CardContent>
       </Card>
     </AuthLayout>
-  )
-}
+  );
+};

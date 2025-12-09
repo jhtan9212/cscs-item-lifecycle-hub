@@ -28,15 +28,15 @@ export const dashboardService = {
       const tasks = await taskService.getAll().catch(() => []);
 
       const totalProjects = projects.length;
-      const activeProjects = projects.filter(p => p.status === 'IN_PROGRESS').length;
-      const completedProjects = projects.filter(p => p.status === 'COMPLETED').length;
+      const activeProjects = projects.filter((p) => p.status === 'IN_PROGRESS').length;
+      const completedProjects = projects.filter((p) => p.status === 'COMPLETED').length;
       const totalItems = projects.reduce((sum, p) => sum + (p.items?.length || 0), 0);
       const pendingTasks = tasks.filter((t: any) => t.status === 'PENDING').length;
 
       const projectsByStatus: Record<string, number> = {};
       const projectsByLifecycle: Record<string, number> = {};
-      
-      projects.forEach(p => {
+
+      projects.forEach((p) => {
         projectsByStatus[p.status] = (projectsByStatus[p.status] || 0) + 1;
         projectsByLifecycle[p.lifecycleType] = (projectsByLifecycle[p.lifecycleType] || 0) + 1;
       });
@@ -56,4 +56,3 @@ export const dashboardService = {
     }
   },
 };
-

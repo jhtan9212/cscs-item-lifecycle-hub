@@ -83,4 +83,3 @@ export const usePermissions = () => {
     permissions: Array.from(permissions),
   };
 };
-

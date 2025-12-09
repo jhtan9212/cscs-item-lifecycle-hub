@@ -1,18 +1,18 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { usePermissions } from "@/hooks/usePermissions"
-import { ArrowRight, ArrowLeft, Loader2 } from "lucide-react"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { usePermissions } from '@/hooks/usePermissions';
+import { ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 
 interface WorkflowControlsProps {
-  projectId: string
-  currentStage: string
-  canAdvance: boolean
-  canMoveBack: boolean
-  onAdvance: (comment?: string) => Promise<void>
-  onMoveBack: (comment?: string) => Promise<void>
+  projectId: string;
+  currentStage: string;
+  canAdvance: boolean;
+  canMoveBack: boolean;
+  onAdvance: (comment?: string) => Promise<void>;
+  onMoveBack: (comment?: string) => Promise<void>;
 }
 
 export const WorkflowControls = ({
@@ -22,40 +22,40 @@ export const WorkflowControls = ({
   onAdvance,
   onMoveBack,
 }: WorkflowControlsProps) => {
-  const { hasPermission } = usePermissions()
-  const [comment, setComment] = useState("")
-  const [loading, setLoading] = useState(false)
+  const { hasPermission } = usePermissions();
+  const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const canAdvanceWorkflow = hasPermission("ADVANCE_WORKFLOW")
-  const canMoveBackWorkflow = hasPermission("MOVE_BACK_WORKFLOW")
+  const canAdvanceWorkflow = hasPermission('ADVANCE_WORKFLOW');
+  const canMoveBackWorkflow = hasPermission('MOVE_BACK_WORKFLOW');
 
   const handleAdvance = async () => {
     try {
-      setLoading(true)
-      await onAdvance(comment || undefined)
-      setComment("")
+      setLoading(true);
+      await onAdvance(comment || undefined);
+      setComment('');
     } catch (error: any) {
       // Error is already handled by parent component (ProjectDetail) with toast
       // Just log for debugging
-      console.error("Failed to advance workflow:", error)
+      console.error('Failed to advance workflow:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleMoveBack = async () => {
     try {
-      setLoading(true)
-      await onMoveBack(comment || undefined)
-      setComment("")
+      setLoading(true);
+      await onMoveBack(comment || undefined);
+      setComment('');
     } catch (error: any) {
       // Error is already handled by parent component (ProjectDetail) with toast
       // Just log for debugging
-      console.error("Failed to move back workflow:", error)
+      console.error('Failed to move back workflow:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Card>
@@ -109,10 +109,12 @@ export const WorkflowControls = ({
             </Button>
           )}
           {!canAdvanceWorkflow && !canMoveBackWorkflow && (
-            <p className="text-sm text-muted-foreground">You don't have permission to modify workflow</p>
+            <p className="text-sm text-muted-foreground">
+              You don't have permission to modify workflow
+            </p>
           )}
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

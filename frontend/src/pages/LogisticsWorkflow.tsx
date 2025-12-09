@@ -21,7 +21,9 @@ export const LogisticsWorkflow: FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [freightData, setFreightData] = useState<Record<string, { freightStrategy?: string; freightBrackets?: string }>>({});
+  const [freightData, setFreightData] = useState<
+    Record<string, { freightStrategy?: string; freightBrackets?: string }>
+  >({});
 
   useEffect(() => {
     if (id) {
@@ -35,7 +37,7 @@ export const LogisticsWorkflow: FC = () => {
       setLoading(true);
       const data = await projectService.getById(id!);
       setProject(data);
-      
+
       if (data.currentStage !== 'Freight Strategy') {
         setError('This project is not at the Freight Strategy stage');
       }
@@ -52,13 +54,19 @@ export const LogisticsWorkflow: FC = () => {
       if (id) {
         const data = await itemService.getByProject(id);
         setItems(data);
-        
+
         // Initialize freight data
-        const initialFreight: Record<string, { freightStrategy?: string; freightBrackets?: string }> = {};
+        const initialFreight: Record<
+          string,
+          { freightStrategy?: string; freightBrackets?: string }
+        > = {};
         data.forEach((item) => {
           initialFreight[item.id] = {
             freightStrategy: item.freightStrategy,
-            freightBrackets: typeof item.freightBrackets === 'string' ? item.freightBrackets : JSON.stringify(item.freightBrackets || {}),
+            freightBrackets:
+              typeof item.freightBrackets === 'string'
+                ? item.freightBrackets
+                : JSON.stringify(item.freightBrackets || {}),
           };
         });
         setFreightData(initialFreight);
@@ -68,7 +76,11 @@ export const LogisticsWorkflow: FC = () => {
     }
   };
 
-  const handleFreightChange = (itemId: string, field: 'freightStrategy' | 'freightBrackets', value: string) => {
+  const handleFreightChange = (
+    itemId: string,
+    field: 'freightStrategy' | 'freightBrackets',
+    value: string
+  ) => {
     setFreightData((prev) => ({
       ...prev,
       [itemId]: {
@@ -87,22 +99,23 @@ export const LogisticsWorkflow: FC = () => {
       });
       await loadItems();
       toast({
-        title: "Freight Strategy Saved",
-        description: "Freight strategy has been successfully saved.",
+        title: 'Freight Strategy Saved',
+        description: 'Freight strategy has been successfully saved.',
       });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || 'Failed to save freight strategy';
+      const errorMessage =
+        err.response?.data?.error || err.message || 'Failed to save freight strategy';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
 
   const handleSubmitFreightStrategy = async () => {
     if (!id) return;
-    
+
     // Validate all items have freight strategy
     const missingStrategy = items.filter((item) => {
       const freight = freightData[item.id];
@@ -111,41 +124,44 @@ export const LogisticsWorkflow: FC = () => {
 
     if (missingStrategy.length > 0) {
       toast({
-        title: "Validation Error",
+        title: 'Validation Error',
         description: `Please set Freight Strategy for all items before submitting. Missing: ${missingStrategy.length} item(s)`,
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
 
     try {
       setSubmitting(true);
-      
+
       // Save all freight updates
       for (const item of items) {
         const freight = freightData[item.id];
         if (freight) {
           await itemService.update(item.id, {
             freightStrategy: freight.freightStrategy,
-            freightBrackets: freight.freightBrackets ? JSON.parse(freight.freightBrackets) : undefined,
+            freightBrackets: freight.freightBrackets
+              ? JSON.parse(freight.freightBrackets)
+              : undefined,
           });
         }
       }
 
       // Advance workflow
       await projectService.advanceWorkflow(id, 'Freight strategy submitted');
-      
+
       toast({
-        title: "Success",
-        description: "Freight strategy has been submitted successfully!",
+        title: 'Success',
+        description: 'Freight strategy has been submitted successfully!',
       });
       navigate('/my-tasks');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || 'Failed to submit freight strategy';
+      const errorMessage =
+        err.response?.data?.error || err.message || 'Failed to submit freight strategy';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setSubmitting(false);
@@ -177,7 +193,11 @@ export const LogisticsWorkflow: FC = () => {
         <p className="text-yellow-800">
           This project is at "{project.currentStage}" stage, not "Freight Strategy" stage.
         </p>
-        <Button onClick={() => navigate(`/projects/${project.id}`)} className="mt-4" variant="outline">
+        <Button
+          onClick={() => navigate(`/projects/${project.id}`)}
+          className="mt-4"
+          variant="outline"
+        >
           View Project
         </Button>
       </div>
@@ -198,8 +218,8 @@ export const LogisticsWorkflow: FC = () => {
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
         <p className="text-blue-800">
-          <strong>Instructions:</strong> Set freight strategy and brackets for each item. 
-          All items must have a freight strategy before you can submit.
+          <strong>Instructions:</strong> Set freight strategy and brackets for each item. All items
+          must have a freight strategy before you can submit.
         </p>
       </div>
 
@@ -247,17 +267,15 @@ export const LogisticsWorkflow: FC = () => {
                       }
                       placeholder='{"zone1": 10.00, "zone2": 15.00, ...}'
                     />
-                    <p className="text-xs text-gray-500 mt-1">Optional: JSON format for freight brackets by zone</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Optional: JSON format for freight brackets by zone
+                    </p>
                   </div>
                 </div>
 
                 {hasPermission('UPDATE_ITEM') && (
                   <div className="mt-4">
-                    <Button
-                      onClick={() => handleSaveFreight(item.id)}
-                      size="sm"
-                      variant="outline"
-                    >
+                    <Button onClick={() => handleSaveFreight(item.id)} size="sm" variant="outline">
                       Save Freight Strategy
                     </Button>
                   </div>
@@ -290,4 +308,3 @@ export const LogisticsWorkflow: FC = () => {
     </div>
   );
 };
-

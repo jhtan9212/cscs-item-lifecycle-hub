@@ -1,164 +1,171 @@
-import { useState, useEffect } from "react"
-import { userService, type User, type CreateUserData } from "@/services/userService"
-import { roleService, type Role } from "@/services/roleService"
-import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from 'react';
+import { userService, type User, type CreateUserData } from '@/services/userService';
+import { roleService, type Role } from '@/services/roleService';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Card } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { formatDate } from "@/utils/formatters"
-import { useAuth } from "@/context/AuthContext"
-import { Plus, Edit, UserX, UserCheck, AlertCircle, Loader2, Save, X } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/select';
+import { Card } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { formatDate } from '@/utils/formatters';
+import { useAuth } from '@/context/AuthContext';
+import { Plus, Edit, UserX, UserCheck, AlertCircle, Loader2, Save, X } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
 
 export const UserManagement = () => {
-  const { user: currentUser } = useAuth()
-  const { toast } = useToast()
-  const [users, setUsers] = useState<User[]>([])
-  const [roles, setRoles] = useState<Role[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const { user: currentUser } = useAuth();
+  const { toast } = useToast();
+  const [users, setUsers] = useState<User[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<CreateUserData>({
-    name: "",
-    email: "",
-    password: "",
-    roleId: "",
-  })
+    name: '',
+    email: '',
+    password: '',
+    roleId: '',
+  });
 
   useEffect(() => {
-    loadData()
-  }, [])
+    loadData();
+  }, []);
 
   const loadData = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const [usersData, rolesData] = await Promise.all([
         userService.getAll(),
         roleService.getAll(),
-      ])
-      setUsers(usersData)
-      setRoles(rolesData)
-      setError(null)
+      ]);
+      setUsers(usersData);
+      setRoles(rolesData);
+      setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to load users")
+      setError(err.response?.data?.error || err.message || 'Failed to load users');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
     if (!formData.name || !formData.email || !formData.password) {
-      setError("Name, email, and password are required")
-      return
+      setError('Name, email, and password are required');
+      return;
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
-      return
+      setError('Password must be at least 6 characters');
+      return;
     }
 
     try {
-      await userService.create(formData)
-      setShowCreateForm(false)
-      setFormData({ name: "", email: "", password: "", roleId: "" })
-      await loadData()
+      await userService.create(formData);
+      setShowCreateForm(false);
+      setFormData({ name: '', email: '', password: '', roleId: '' });
+      await loadData();
       toast({
-        title: "Success",
-        description: "User created successfully",
-      })
+        title: 'Success',
+        description: 'User created successfully',
+      });
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to create user")
+      setError(err.response?.data?.error || err.message || 'Failed to create user');
       toast({
-        title: "Error",
-        description: err.response?.data?.error || err.message || "Failed to create user",
-        variant: "destructive",
-      })
+        title: 'Error',
+        description: err.response?.data?.error || err.message || 'Failed to create user',
+        variant: 'destructive',
+      });
     }
-  }
+  };
 
   const handleUpdateUser = async (userId: string, updates: Partial<User>) => {
-    setError(null)
+    setError(null);
     try {
-      await userService.update(userId, updates)
-      setEditingUser(null)
-      await loadData()
+      await userService.update(userId, updates);
+      setEditingUser(null);
+      await loadData();
       toast({
-        title: "Success",
-        description: "User updated successfully",
-      })
+        title: 'Success',
+        description: 'User updated successfully',
+      });
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to update user")
+      setError(err.response?.data?.error || err.message || 'Failed to update user');
       toast({
-        title: "Error",
-        description: err.response?.data?.error || err.message || "Failed to update user",
-        variant: "destructive",
-      })
+        title: 'Error',
+        description: err.response?.data?.error || err.message || 'Failed to update user',
+        variant: 'destructive',
+      });
     }
-  }
+  };
 
   const handleDeactivate = async (userId: string) => {
-    if (!confirm("Are you sure you want to deactivate this user?")) {
-      return
+    if (!confirm('Are you sure you want to deactivate this user?')) {
+      return;
     }
-    setError(null)
+    setError(null);
     try {
-      await userService.deactivate(userId)
-      await loadData()
+      await userService.deactivate(userId);
+      await loadData();
       toast({
-        title: "Success",
-        description: "User deactivated successfully",
-      })
+        title: 'Success',
+        description: 'User deactivated successfully',
+      });
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to deactivate user")
+      setError(err.response?.data?.error || err.message || 'Failed to deactivate user');
       toast({
-        title: "Error",
-        description: err.response?.data?.error || err.message || "Failed to deactivate user",
-        variant: "destructive",
-      })
+        title: 'Error',
+        description: err.response?.data?.error || err.message || 'Failed to deactivate user',
+        variant: 'destructive',
+      });
     }
-  }
+  };
 
   const handleActivate = async (userId: string) => {
-    setError(null)
+    setError(null);
     try {
-      await userService.activate(userId)
-      await loadData()
+      await userService.activate(userId);
+      await loadData();
       toast({
-        title: "Success",
-        description: "User activated successfully",
-      })
+        title: 'Success',
+        description: 'User activated successfully',
+      });
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to activate user")
+      setError(err.response?.data?.error || err.message || 'Failed to activate user');
       toast({
-        title: "Error",
-        description: err.response?.data?.error || err.message || "Failed to activate user",
-        variant: "destructive",
-      })
+        title: 'Error',
+        description: err.response?.data?.error || err.message || 'Failed to activate user',
+        variant: 'destructive',
+      });
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   return (
@@ -287,8 +294,8 @@ export const UserManagement = () => {
                 <tr
                   key={user.id}
                   className={cn(
-                    "hover:bg-accent/50 transition-colors",
-                    !user.isActive && "opacity-60"
+                    'hover:bg-accent/50 transition-colors',
+                    !user.isActive && 'opacity-60'
                   )}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -308,7 +315,7 @@ export const UserManagement = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                    {user.lastLogin ? formatDate(user.lastLogin) : "Never"}
+                    {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     {formatDate(user.createdAt)}
@@ -324,11 +331,7 @@ export const UserManagement = () => {
                         />
                       ) : (
                         <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditingUser(user)}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => setEditingUser(user)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
                           </Button>
@@ -363,31 +366,31 @@ export const UserManagement = () => {
         </div>
       </Card>
     </div>
-  )
-}
+  );
+};
 
 interface UserEditFormProps {
-  user: User
-  roles: Role[]
-  onSave: (updates: Partial<User>) => void
-  onCancel: () => void
+  user: User;
+  roles: Role[];
+  onSave: (updates: Partial<User>) => void;
+  onCancel: () => void;
 }
 
 const UserEditForm = ({ user, roles, onSave, onCancel }: UserEditFormProps) => {
-  const [name, setName] = useState(user.name)
-  const [email, setEmail] = useState(user.email)
-  const [roleId, setRoleId] = useState(user.roleId)
-  const [saving, setSaving] = useState(false)
+  const [name, setName] = useState(user.name);
+  const [email, setEmail] = useState(user.email);
+  const [roleId, setRoleId] = useState(user.roleId);
+  const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
+    e.preventDefault();
+    setSaving(true);
     try {
-      await onSave({ name, email, roleId })
+      await onSave({ name, email, roleId });
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap gap-2 items-center">
@@ -432,5 +435,5 @@ const UserEditForm = ({ user, roles, onSave, onCancel }: UserEditFormProps) => {
         Cancel
       </Button>
     </form>
-  )
-}
+  );
+};

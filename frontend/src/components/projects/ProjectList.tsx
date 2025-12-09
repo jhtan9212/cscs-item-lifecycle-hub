@@ -1,45 +1,45 @@
-import { useState, useEffect } from "react"
-import type { Project } from "@/types/project"
-import { projectService } from "@/services/projectService"
-import { ProjectCard } from "./ProjectCard"
-import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useNavigate } from "react-router-dom"
-import { usePermissions } from "@/hooks/usePermissions"
-import { AlertCircle, Plus } from "lucide-react"
+import { useState, useEffect } from 'react';
+import type { Project } from '@/types/project';
+import { projectService } from '@/services/projectService';
+import { ProjectCard } from './ProjectCard';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useNavigate } from 'react-router-dom';
+import { usePermissions } from '@/hooks/usePermissions';
+import { AlertCircle, Plus } from 'lucide-react';
 
 export const ProjectList = () => {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
-  const { hasPermission } = usePermissions()
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
 
   useEffect(() => {
-    loadProjects()
-  }, [])
+    loadProjects();
+  }, []);
 
   const loadProjects = async () => {
     try {
-      setLoading(true)
-      const data = await projectService.getAll()
-      setProjects(data)
-      setError(null)
+      setLoading(true);
+      const data = await projectService.getAll();
+      setProjects(data);
+      setError(null);
     } catch (err: any) {
-      setError(err.message || "Failed to load projects")
+      setError(err.message || 'Failed to load projects');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -53,7 +53,7 @@ export const ProjectList = () => {
           </Button>
         </AlertDescription>
       </Alert>
-    )
+    );
   }
 
   return (
@@ -61,12 +61,10 @@ export const ProjectList = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your item lifecycle projects
-          </p>
+          <p className="text-muted-foreground mt-1">Manage your item lifecycle projects</p>
         </div>
-        {hasPermission("CREATE_PROJECT") && (
-          <Button onClick={() => navigate("/projects/new")}>
+        {hasPermission('CREATE_PROJECT') && (
+          <Button onClick={() => navigate('/projects/new')}>
             <Plus className="mr-2 h-4 w-4" />
             Create New Project
           </Button>
@@ -77,8 +75,8 @@ export const ProjectList = () => {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <p className="text-muted-foreground mb-4">No projects found</p>
-            {hasPermission("CREATE_PROJECT") && (
-              <Button onClick={() => navigate("/projects/new")}>
+            {hasPermission('CREATE_PROJECT') && (
+              <Button onClick={() => navigate('/projects/new')}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create Your First Project
               </Button>
@@ -93,5 +91,5 @@ export const ProjectList = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};

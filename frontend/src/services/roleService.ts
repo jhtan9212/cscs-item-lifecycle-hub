@@ -39,9 +39,11 @@ export const roleService = {
     return response.data;
   },
 
-  updatePermissions: async (roleId: string, permissions: { permissionId: string; granted: boolean }[]): Promise<Role> => {
+  updatePermissions: async (
+    roleId: string,
+    permissions: { permissionId: string; granted: boolean }[]
+  ): Promise<Role> => {
     const response = await api.put<Role>(`/roles/${roleId}/permissions`, { permissions });
     return response.data;
   },
 };
-

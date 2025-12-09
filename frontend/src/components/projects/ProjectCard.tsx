@@ -1,21 +1,23 @@
-import { Link } from "react-router-dom"
-import type { Project } from "@/types/project"
-import { formatDate } from "@/utils/formatters"
-import { PROJECT_STATUS } from "@/utils/constants"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Link } from 'react-router-dom';
+import type { Project } from '@/types/project';
+import { formatDate } from '@/utils/formatters';
+import { PROJECT_STATUS } from '@/utils/constants';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface ProjectCardProps {
-  project: Project
+  project: Project;
 }
 
 export const ProjectCard = ({ project }: ProjectCardProps) => {
-  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
-    if (status === "COMPLETED") return "default"
-    if (status === "REJECTED") return "destructive"
-    if (status === "IN_PROGRESS" || status === "INTERNAL_REVIEW") return "secondary"
-    return "outline"
-  }
+  const getStatusVariant = (
+    status: string
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    if (status === 'COMPLETED') return 'default';
+    if (status === 'REJECTED') return 'destructive';
+    if (status === 'IN_PROGRESS' || status === 'INTERNAL_REVIEW') return 'secondary';
+    return 'outline';
+  };
 
   return (
     <Link to={`/projects/${project.id}`} className="block">
@@ -45,11 +47,11 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
 
           {project.items && project.items.length > 0 && (
             <div className="text-sm text-muted-foreground pt-2 border-t">
-              {project.items.length} item{project.items.length !== 1 ? "s" : ""}
+              {project.items.length} item{project.items.length !== 1 ? 's' : ''}
             </div>
           )}
         </CardContent>
       </Card>
     </Link>
-  )
-}
+  );
+};

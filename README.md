@@ -1,68 +1,86 @@
-# Item Lifecycle Hub Platform - POC
+# Item Lifecycle Hub Platform
 
-A proof of concept web application for managing item lifecycle workflows in a multi-partner supply chain network.
+A comprehensive project management platform for managing item lifecycles with role-based access control, workflow management, and audit logging.
 
-## 📋 Overview
+## 🏗️ Tech Stack
 
-This POC demonstrates a centralized platform for managing items through their lifecycle phases:
-- **New Items**: Items entering the system for the first time
-- **Transitioning Items**: Items changing specification and being replaced
-- **Deleting Items**: Items being discontinued or removed from distribution
+### Frontend
+- **React 19** - UI library
+- **TypeScript** - Type safety
+- **TailwindCSS** - Styling
+- **shadcn/ui** - Component library
+- **React Router v7** - Routing
+- **Axios** - HTTP client
+- **Vite** - Build tool
 
-## 🏗️ Architecture
-
-### Tech Stack
-- **Frontend**: React + TypeScript + Vite
-- **Backend**: Express.js + TypeScript
-- **Database**: PostgreSQL
-- **ORM**: Prisma
-- **Styling**: CSS (can be extended with Tailwind or styled-components)
-
-### Architecture Pattern
-- **Frontend**: Component-based React application with service layer
-- **Backend**: RESTful API with Express.js
-- **Database**: Relational database with Prisma ORM
-- **Workflow Engine**: Centralized workflow state management
+### Backend
+- **Node.js** - Runtime
+- **Express.js** - Web framework
+- **TypeScript** - Type safety
+- **Prisma** - ORM
+- **PostgreSQL** - Database
+- **JWT** - Authentication
+- **bcryptjs** - Password hashing
 
 ## 📁 Project Structure
 
 ```
 cscs_poc/
-├── backend/          # Express.js API server
-├── frontend/         # React application
-├── docs/            # Documentation
-└── README.md        # This file
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── pages/          # Route pages
+│   │   ├── services/       # API services
+│   │   ├── hooks/          # Custom hooks
+│   │   ├── types/          # TypeScript types
+│   │   ├── utils/          # Utility functions
+│   │   └── lib/            # Library configs
+│   └── package.json
+├── backend/
+│   ├── src/
+│   │   ├── controllers/    # Route handlers
+│   │   ├── routes/        # Route definitions
+│   │   ├── services/      # Business logic
+│   │   ├── middleware/    # Express middleware
+│   │   ├── config/        # Configuration
+│   │   └── utils/         # Utility functions
+│   ├── prisma/            # Database schema & migrations
+│   └── package.json
+└── CODING_STANDARDS.md    # Coding standards documentation
 ```
 
-See [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for detailed structure.
-
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
-- PostgreSQL (v14+)
-- npm or yarn
 
-### Setup Instructions
+- Node.js 18+ and npm
+- PostgreSQL 14+
+- Git
 
-**For detailed setup instructions, see [SETUP.md](./SETUP.md)**
+### Installation
 
-Quick setup:
-
-1. **Database Setup**
+1. **Clone the repository**
    ```bash
-   # Create PostgreSQL database
-   createdb cscs_poc
+   git clone <repository-url>
+   cd cscs_poc
    ```
 
 2. **Backend Setup**
    ```bash
    cd backend
    npm install
+   
+   # Set up environment variables
    cp .env.example .env
-   # Edit .env with your database credentials
+   # Edit .env with your database URL and JWT secret
+   
+   # Run database migrations
    npx prisma migrate dev
+   
+   # Seed the database
    npm run prisma:seed
+   
+   # Start development server
    npm run dev
    ```
 
@@ -70,186 +88,125 @@ Quick setup:
    ```bash
    cd frontend
    npm install
+   
+   # Set up environment variables
+   cp .env.example .env
+   # Edit .env with your API URL
+   
+   # Start development server
    npm run dev
    ```
 
-4. **Access Application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:3000
-   - Prisma Studio: `npx prisma studio` (in backend directory)
+## 📝 Environment Variables
 
-See [SETUP.md](./SETUP.md) for detailed setup instructions and [QUICK_START.md](./QUICK_START.md) for development checklist.
+### Backend (.env)
+```env
+NODE_ENV=development
+PORT=3000
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+JWT_SECRET=your-secret-key-here
+JWT_EXPIRES_IN=7d
+CORS_ORIGIN=http://localhost:5173
+```
+
+### Frontend (.env)
+```env
+VITE_API_URL=http://localhost:3000/api
+```
+
+## 🛠️ Development
+
+### Code Quality
+
+**Frontend:**
+```bash
+npm run lint          # Run ESLint
+npm run lint:fix      # Fix ESLint errors
+npm run format        # Format with Prettier
+npm run type-check    # TypeScript type checking
+```
+
+**Backend:**
+```bash
+npm run build         # Compile TypeScript
+npm run lint          # Run ESLint (if configured)
+```
+
+### Database Management
+
+```bash
+# Generate Prisma Client
+npm run prisma:generate
+
+# Create migration
+npm run prisma:migrate
+
+# Open Prisma Studio
+npm run prisma:studio
+
+# Seed database
+npm run prisma:seed
+```
 
 ## 📚 Documentation
 
-- **[IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md)**: Comprehensive implementation guide
-- **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)**: Detailed project structure
-- **[WORKFLOW_REFERENCE.md](./WORKFLOW_REFERENCE.md)**: Workflow stages and rules
-- **[QUICK_START.md](./QUICK_START.md)**: Step-by-step implementation checklist
+- [Coding Standards](./CODING_STANDARDS.md) - Comprehensive coding standards and best practices
+- [API Documentation](./docs/API.md) - API endpoint documentation (if available)
+- [Testing Guide](./docs/TESTING.md) - Testing guidelines (if available)
 
-## ✨ Features
+## 🔒 Security
 
-### Part 1: Core Features (Required)
-- ✅ Project creation and management
-- ✅ Item CRUD operations
-- ✅ Workflow stage management
-- ✅ Advance/regress workflow stages
-- ✅ Field ownership labeling
-- ✅ Clean, intuitive UI
+This project follows OWASP security best practices:
 
-### Part 2: Advanced Features ✅ COMPLETE
-- ✅ Full lifecycle modeling (New, Transitioning, Deleting)
-- ✅ Complete RBAC implementation with JWT authentication
-- ✅ Asynchronous workflows with tasks and notifications
-- ✅ Enhanced data model (Notifications, Tasks, SystemSettings)
-- ✅ Deployment ready
-- ✅ Scalability considerations
-- ✅ Permission matrix UI
-- ✅ Notification system
-- ✅ Enhanced dashboard with analytics
-
-## 🔄 Workflow Stages
-
-### New Item Lifecycle
-1. Draft → 2. Freight Strategy → 3. Supplier Pricing → 4. KINEXO Pricing → 
-5. CM Approval → 6. SSM Approval → 7. In Transition → 8. Completed
-
-See [WORKFLOW_REFERENCE.md](./WORKFLOW_REFERENCE.md) for complete workflow details.
-
-## 👥 Roles & Permissions
-
-### Internal CSCS Roles
-- **Admin**: All permissions
-- **Category Manager**: Project creation, item management, approvals
-- **Strategic Supply Manager**: Supply chain coordination, approvals
-- **Pricing Specialist**: Pricing management and approvals
-- **Logistics**: Freight strategy and logistics coordination
-
-### External Roles (Part 2)
-- **Supplier**: Item specifications, pricing submission
-- **DC Operator**: Distribution center operations
-
-## 🗄️ Database Schema
-
-### Core Models
-- **User**: System users
-- **Role**: User roles
-- **Permission**: System permissions
-- **Project**: Item lifecycle projects
-- **Item**: Individual items within projects
-- **WorkflowStep**: Workflow stage tracking
-- **Comment**: Collaboration comments
-- **AuditLog**: Activity audit trail
-
-See [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) for complete schema.
-
-## 🔌 API Endpoints
-
-### Projects
-- `GET /api/projects` - List projects
-- `POST /api/projects` - Create project
-- `GET /api/projects/:id` - Get project
-- `PUT /api/projects/:id` - Update project
-- `DELETE /api/projects/:id` - Delete project
-- `POST /api/projects/:id/advance` - Advance workflow
-- `POST /api/projects/:id/back` - Move workflow back
-
-### Items
-- `GET /api/projects/:projectId/items` - List items
-- `POST /api/projects/:projectId/items` - Create item
-- `GET /api/items/:id` - Get item
-- `PUT /api/items/:id` - Update item
-- `DELETE /api/items/:id` - Delete item
-
-### Workflow
-- `GET /api/projects/:id/workflow` - Get workflow status
-
-See [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) for complete API documentation.
+- Input validation on all endpoints
+- SQL injection prevention (Prisma ORM)
+- XSS protection
+- CSRF protection
+- Secure password hashing (bcrypt)
+- JWT authentication
+- Role-based access control (RBAC)
+- Security headers middleware
+- Rate limiting
 
 ## 🧪 Testing
 
-### Manual Testing Checklist
-- [ ] Create project
-- [ ] Add items to project
-- [ ] Advance workflow stages
-- [ ] Move workflow back
-- [ ] View field ownership
-- [ ] Update item fields
-- [ ] View project details
-
-## 🚀 Deployment
-
-### Development
 ```bash
-# Backend
-cd backend && npm run dev
+# Run tests (when implemented)
+npm test
 
-# Frontend
-cd frontend && npm run dev
+# Run tests with coverage
+npm run test:coverage
 ```
 
-### Production
-See [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md) for deployment strategies.
+## 📦 Building for Production
 
-## 📝 Development Notes
+**Backend:**
+```bash
+npm run build
+npm start
+```
 
-### Key Design Decisions
-1. **Workflow Engine**: Centralized workflow management for consistency
-2. **Field Ownership**: Labeling system for Part 1, full RBAC for Part 2
-3. **Type Safety**: TypeScript throughout for better developer experience
-4. **Modular Structure**: Separation of concerns for maintainability
+**Frontend:**
+```bash
+npm run build
+npm run preview
+```
 
-### What Would Be Improved With More Time
-1. **Testing**: Comprehensive unit and integration tests
-2. **UI/UX**: Enhanced visual design and animations
-3. **Performance**: Caching, pagination, optimization
-4. **Security**: Full authentication, input sanitization
-5. **Documentation**: API documentation (Swagger), component docs
-6. **Accessibility**: WCAG compliance, keyboard navigation
-7. **Real-time**: WebSocket for live updates
-8. **Mobile**: Responsive design optimization
+## 🤝 Contributing
 
-## ⏱️ Time Spent
-
-- **Planning & Design**: ___ hours
-- **Backend Development**: ___ hours
-- **Frontend Development**: ___ hours
-- **Integration & Testing**: ___ hours
-- **Documentation**: ___ hours
-- **Part 2 Features**: ___ hours
-- **Total**: ___ hours
-
-## 🔐 Authentication
-
-The application now includes full authentication. Test credentials:
-
-- **Admin**: admin@cscs.com / password123
-- **Category Manager**: cm@cscs.com / password123
-- **Strategic Supply Manager**: ssm@cscs.com / password123
-- **Pricing Specialist**: pricing@cscs.com / password123
-- **Logistics**: logistics@cscs.com / password123
-
-See [FINAL_IMPLEMENTATION_SUMMARY.md](./FINAL_IMPLEMENTATION_SUMMARY.md) for complete feature list.
-
-## 📞 Contact
-
-For questions or presentation scheduling:
-- Email: james.hennahane@cscscoop.com
+1. Follow the [Coding Standards](./CODING_STANDARDS.md)
+2. Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
+3. Ensure all tests pass
+4. Run linter and formatter before committing
 
 ## 📄 License
 
-This is a proof of concept project for evaluation purposes.
+[Your License Here]
+
+## 👥 Authors
+
+[Your Team/Name Here]
 
 ---
 
-## 🎯 Next Steps
-
-1. Review implementation approach
-2. Set up development environment
-3. Follow quick start checklist
-4. Implement Part 1 features
-5. Optionally implement Part 2 features
-6. Prepare presentation
-
-For detailed implementation guidance, see [IMPLEMENTATION_APPROACH.md](./IMPLEMENTATION_APPROACH.md).
-
+For detailed coding standards and best practices, see [CODING_STANDARDS.md](./CODING_STANDARDS.md).

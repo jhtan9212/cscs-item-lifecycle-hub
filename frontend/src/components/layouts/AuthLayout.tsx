@@ -1,9 +1,9 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from 'react';
 
 interface AuthLayoutProps {
-  children: ReactNode
-  title?: string
-  description?: string
+  children: ReactNode;
+  title?: string;
+  description?: string;
 }
 
 export function AuthLayout({ children, title, description }: AuthLayoutProps) {
@@ -13,14 +13,11 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
         {title && (
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-            {description && (
-              <p className="text-muted-foreground">{description}</p>
-            )}
+            {description && <p className="text-muted-foreground">{description}</p>}
           </div>
         )}
         {children}
       </div>
     </div>
-  )
+  );
 }
-

@@ -7,19 +7,14 @@ interface FieldOwnershipLabelProps {
 }
 
 export const FieldOwnershipLabel: FC<FieldOwnershipLabelProps> = ({ owner, community }) => {
-  const ownershipInfo = Object.values(FIELD_OWNERSHIP).find(
-    (info) => info.owner === owner
-  );
+  const ownershipInfo = Object.values(FIELD_OWNERSHIP).find((info) => info.owner === owner);
 
   const color = ownershipInfo?.color || '#6b7280';
   const displayCommunity = community || ownershipInfo?.community || 'Unknown';
 
   return (
     <div className="flex items-center space-x-2 mb-2">
-      <div
-        className="w-3 h-3 rounded-full"
-        style={{ backgroundColor: color }}
-      />
+      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
       <span className="text-xs text-gray-600">
         <span className="font-medium">{owner}</span>
         {displayCommunity && ` • ${displayCommunity}`}
@@ -27,4 +22,3 @@ export const FieldOwnershipLabel: FC<FieldOwnershipLabelProps> = ({ owner, commu
     </div>
   );
 };
-

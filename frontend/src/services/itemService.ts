@@ -26,4 +26,3 @@ export const itemService = {
     await api.delete(`/items/${id}`);
   },
 };
-

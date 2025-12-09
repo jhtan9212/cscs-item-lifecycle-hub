@@ -3,7 +3,7 @@ import prisma from '../config/database';
 import { generateProjectNumber } from '../utils/helpers';
 import { WorkflowEngine } from '../services/workflowEngine';
 
-export const getAllProjects = async (req: Request, res: Response) => {
+export const getAllProjects = async (_req: Request, res: Response): Promise<Response> => {
   try {
     const projects = await prisma.project.findMany({
       include: {
@@ -28,13 +28,13 @@ export const getAllProjects = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(projects);
+    return res.json(projects);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const getProject = async (req: Request, res: Response) => {
+export const getProject = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -118,11 +118,11 @@ export const getProject = async (req: Request, res: Response) => {
       error: 'You do not have permission to view this project',
     });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const createProject = async (req: Request, res: Response) => {
+export const createProject = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { name, description, lifecycleType, items } = req.body;
 
@@ -192,13 +192,13 @@ export const createProject = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(201).json(projectWithWorkflow);
+    return res.status(201).json(projectWithWorkflow);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const updateProject = async (req: Request, res: Response) => {
+export const updateProject = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const { name, description, lifecycleType, status } = req.body;
@@ -244,9 +244,9 @@ export const updateProject = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(updatedProject);
+    return res.json(updatedProject);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -266,13 +266,13 @@ export const deleteProject = async (req: Request, res: Response) => {
       where: { id },
     });
 
-    res.json({ message: 'Project deleted successfully' });
+    return res.json({ message: 'Project deleted successfully' });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const advanceWorkflow = async (req: Request, res: Response) => {
+export const advanceWorkflow = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const { comment } = req.body;
@@ -282,13 +282,13 @@ export const advanceWorkflow = async (req: Request, res: Response) => {
     }
 
     const result = await WorkflowEngine.advance(id, req.user.userId, comment);
-    res.json(result);
+    return res.json(result);
   } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
 
-export const moveBackWorkflow = async (req: Request, res: Response) => {
+export const moveBackWorkflow = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const { comment } = req.body;
@@ -298,23 +298,23 @@ export const moveBackWorkflow = async (req: Request, res: Response) => {
     }
 
     const result = await WorkflowEngine.moveBack(id, req.user.userId, comment);
-    res.json(result);
+    return res.json(result);
   } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
 
-export const getWorkflowStatus = async (req: Request, res: Response) => {
+export const getWorkflowStatus = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
     const result = await WorkflowEngine.getWorkflowStatus(id);
-    res.json(result);
+    return res.json(result);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const getMyAssignedProjects = async (req: Request, res: Response) => {
+export const getMyAssignedProjects = async (req: Request, res: Response): Promise<Response> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -406,9 +406,9 @@ export const getMyAssignedProjects = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(projects);
+    return res.json(projects);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

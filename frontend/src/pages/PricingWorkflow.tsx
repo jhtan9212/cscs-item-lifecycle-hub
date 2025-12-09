@@ -21,7 +21,9 @@ export const PricingWorkflow: FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [pricingData, setPricingData] = useState<Record<string, { supplierPrice?: number; kinexoPrice?: number }>>({});
+  const [pricingData, setPricingData] = useState<
+    Record<string, { supplierPrice?: number; kinexoPrice?: number }>
+  >({});
 
   useEffect(() => {
     if (id) {
@@ -35,7 +37,7 @@ export const PricingWorkflow: FC = () => {
       setLoading(true);
       const data = await projectService.getById(id!);
       setProject(data);
-      
+
       // Verify this is KINEXO Pricing stage
       if (data.currentStage !== 'KINEXO Pricing') {
         setError('This project is not at the KINEXO Pricing stage');
@@ -53,7 +55,7 @@ export const PricingWorkflow: FC = () => {
       if (id) {
         const data = await itemService.getByProject(id);
         setItems(data);
-        
+
         // Initialize pricing data
         const initialPricing: Record<string, { supplierPrice?: number; kinexoPrice?: number }> = {};
         data.forEach((item) => {
@@ -69,7 +71,11 @@ export const PricingWorkflow: FC = () => {
     }
   };
 
-  const handlePricingChange = (itemId: string, field: 'supplierPrice' | 'kinexoPrice', value: number) => {
+  const handlePricingChange = (
+    itemId: string,
+    field: 'supplierPrice' | 'kinexoPrice',
+    value: number
+  ) => {
     setPricingData((prev) => ({
       ...prev,
       [itemId]: {
@@ -88,22 +94,22 @@ export const PricingWorkflow: FC = () => {
       });
       await loadItems();
       toast({
-        title: "Pricing Saved",
-        description: "Pricing has been successfully saved.",
+        title: 'Pricing Saved',
+        description: 'Pricing has been successfully saved.',
       });
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || 'Failed to save pricing';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
 
   const handleSubmitPricing = async () => {
     if (!id) return;
-    
+
     // Validate all items have pricing
     const missingPricing = items.filter((item) => {
       const pricing = pricingData[item.id];
@@ -112,16 +118,16 @@ export const PricingWorkflow: FC = () => {
 
     if (missingPricing.length > 0) {
       toast({
-        title: "Validation Error",
+        title: 'Validation Error',
         description: `Please set KINEXO Price for all items before submitting. Missing: ${missingPricing.length} item(s)`,
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
 
     try {
       setSubmitting(true);
-      
+
       // Save all pricing updates
       for (const item of items) {
         const pricing = pricingData[item.id];
@@ -135,18 +141,18 @@ export const PricingWorkflow: FC = () => {
 
       // Advance workflow
       await projectService.advanceWorkflow(id, 'Pricing submitted and approved');
-      
+
       toast({
-        title: "Success",
-        description: "Pricing has been submitted successfully!",
+        title: 'Success',
+        description: 'Pricing has been submitted successfully!',
       });
       navigate('/my-tasks');
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || 'Failed to submit pricing';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setSubmitting(false);
@@ -178,7 +184,11 @@ export const PricingWorkflow: FC = () => {
         <p className="text-yellow-800">
           This project is at "{project.currentStage}" stage, not "KINEXO Pricing" stage.
         </p>
-        <Button onClick={() => navigate(`/projects/${project.id}`)} className="mt-4" variant="outline">
+        <Button
+          onClick={() => navigate(`/projects/${project.id}`)}
+          className="mt-4"
+          variant="outline"
+        >
           View Project
         </Button>
       </div>
@@ -199,8 +209,8 @@ export const PricingWorkflow: FC = () => {
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
         <p className="text-blue-800">
-          <strong>Instructions:</strong> Review supplier pricing and set KINEXO pricing for each item. 
-          All items must have KINEXO pricing before you can submit for approval.
+          <strong>Instructions:</strong> Review supplier pricing and set KINEXO pricing for each
+          item. All items must have KINEXO pricing before you can submit for approval.
         </p>
       </div>
 
@@ -229,7 +239,11 @@ export const PricingWorkflow: FC = () => {
                       step="0.01"
                       value={pricing.supplierPrice || item.supplierPrice || ''}
                       onChange={(e) =>
-                        handlePricingChange(item.id, 'supplierPrice', parseFloat(e.target.value) || 0)
+                        handlePricingChange(
+                          item.id,
+                          'supplierPrice',
+                          parseFloat(e.target.value) || 0
+                        )
                       }
                       disabled
                       className="bg-gray-50"
@@ -254,11 +268,7 @@ export const PricingWorkflow: FC = () => {
 
                 {hasPermission('UPDATE_ITEM') && (
                   <div className="mt-4">
-                    <Button
-                      onClick={() => handleSavePricing(item.id)}
-                      size="sm"
-                      variant="outline"
-                    >
+                    <Button onClick={() => handleSavePricing(item.id)} size="sm" variant="outline">
                       Save Pricing
                     </Button>
                   </div>
@@ -276,11 +286,7 @@ export const PricingWorkflow: FC = () => {
                 </p>
               </div>
               {hasPermission('SUBMIT_PRICING') && (
-                <Button
-                  onClick={handleSubmitPricing}
-                  isLoading={submitting}
-                  disabled={submitting}
-                >
+                <Button onClick={handleSubmitPricing} isLoading={submitting} disabled={submitting}>
                   Submit Pricing for Approval
                 </Button>
               )}
@@ -291,4 +297,3 @@ export const PricingWorkflow: FC = () => {
     </div>
   );
 };
-

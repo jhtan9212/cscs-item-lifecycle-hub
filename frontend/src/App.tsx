@@ -1,24 +1,24 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
-import { AuthProvider } from "./context/AuthContext"
-import { ThemeProvider } from "./components/theme-provider"
-import { AppLayout } from "./components/layouts/AppLayout"
-import { ProtectedRoute } from "./components/common/ProtectedRoute"
-import { Toaster } from "./components/ui/toaster"
-import { Dashboard } from "./pages/Dashboard"
-import { Projects } from "./pages/Projects"
-import { ProjectDetail } from "./pages/ProjectDetail"
-import { NewProject } from "./pages/NewProject"
-import { Login } from "./pages/Login"
-import { Register } from "./pages/Register"
-import { RoleManagement } from "./pages/RoleManagement"
-import { UserManagement } from "./pages/UserManagement"
-import { AuditLogs } from "./pages/AuditLogs"
-import { MyTasks } from "./pages/MyTasks"
-import { PricingWorkflow } from "./pages/PricingWorkflow"
-import { LogisticsWorkflow } from "./pages/LogisticsWorkflow"
-import { Notifications } from "./pages/Notifications"
-import { Tasks } from "./pages/Tasks"
-import "./App.css"
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './components/theme-provider';
+import { AppLayout } from './components/layouts/AppLayout';
+import { ProtectedRoute } from './components/common/ProtectedRoute';
+import { Toaster } from './components/ui/toaster';
+import { Dashboard } from './pages/Dashboard';
+import { Projects } from './pages/Projects';
+import { ProjectDetail } from './pages/ProjectDetail';
+import { NewProject } from './pages/NewProject';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+import { RoleManagement } from './pages/RoleManagement';
+import { UserManagement } from './pages/UserManagement';
+import { AuditLogs } from './pages/AuditLogs';
+import { MyTasks } from './pages/MyTasks';
+import { PricingWorkflow } from './pages/PricingWorkflow';
+import { LogisticsWorkflow } from './pages/LogisticsWorkflow';
+import { Notifications } from './pages/Notifications';
+import { Tasks } from './pages/Tasks';
+import './App.css';
 
 function App() {
   return (
@@ -77,7 +77,7 @@ function App() {
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;

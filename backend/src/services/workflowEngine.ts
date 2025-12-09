@@ -1,5 +1,5 @@
 import prisma from '../config/database';
-import { Project, LifecycleType, StepStatus } from '@prisma/client';
+import { LifecycleType, StepStatus } from '@prisma/client';
 import { NotificationService } from './notificationService';
 import { TaskService } from './taskService';
 

@@ -1,44 +1,44 @@
-import { useState, useEffect } from "react"
-import { roleService, type Role } from "@/services/roleService"
-import { PermissionMatrix } from "@/components/permissions/PermissionMatrix"
-import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from 'react';
+import { roleService, type Role } from '@/services/roleService';
+import { PermissionMatrix } from '@/components/permissions/PermissionMatrix';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export const RoleManagement = () => {
-  const [roles, setRoles] = useState<Role[]>([])
-  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadRoles()
-  }, [])
+    loadRoles();
+  }, []);
 
   const loadRoles = async () => {
     try {
-      setLoading(true)
-      const data = await roleService.getAll()
-      setRoles(data)
+      setLoading(true);
+      const data = await roleService.getAll();
+      setRoles(data);
       if (data.length > 0 && !selectedRoleId) {
-        setSelectedRoleId(data[0].id)
+        setSelectedRoleId(data[0].id);
       }
-      setError(null)
+      setError(null);
     } catch (err: any) {
-      setError(err.message || "Failed to load roles")
+      setError(err.message || 'Failed to load roles');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -47,7 +47,7 @@ export const RoleManagement = () => {
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>Error: {error}</AlertDescription>
       </Alert>
-    )
+    );
   }
 
   return (
@@ -71,10 +71,10 @@ export const RoleManagement = () => {
                   key={role.id}
                   onClick={() => setSelectedRoleId(role.id)}
                   className={cn(
-                    "w-full text-left px-4 py-3 rounded-lg transition-colors",
+                    'w-full text-left px-4 py-3 rounded-lg transition-colors',
                     selectedRoleId === role.id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted hover:bg-accent hover:text-accent-foreground"
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted hover:bg-accent hover:text-accent-foreground'
                   )}
                 >
                   <div className="font-medium">{role.name}</div>
@@ -100,5 +100,5 @@ export const RoleManagement = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

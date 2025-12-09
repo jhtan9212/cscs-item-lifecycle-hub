@@ -1,192 +1,195 @@
-import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import type { Project } from "@/types/project"
-import type { Item } from "@/types/item"
-import { projectService } from "@/services/projectService"
-import { itemService } from "@/services/itemService"
-import { WorkflowTimeline } from "@/components/workflow/WorkflowTimeline"
-import { WorkflowControls } from "@/components/workflow/WorkflowControls"
-import { ItemList } from "@/components/items/ItemList"
-import { ItemForm } from "@/components/items/ItemForm"
-import { CommentList } from "@/components/comments/CommentList"
-import { LoadingSpinner } from "@/components/common/LoadingSpinner"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { formatDate } from "@/utils/formatters"
-import { usePermissions } from "@/hooks/usePermissions"
-import { commentService } from "@/services/commentService"
-import type { Comment } from "@/types/project"
-import { ArrowLeft, AlertCircle, Info } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import type { Project } from '@/types/project';
+import type { Item } from '@/types/item';
+import { projectService } from '@/services/projectService';
+import { itemService } from '@/services/itemService';
+import { WorkflowTimeline } from '@/components/workflow/WorkflowTimeline';
+import { WorkflowControls } from '@/components/workflow/WorkflowControls';
+import { ItemList } from '@/components/items/ItemList';
+import { ItemForm } from '@/components/items/ItemForm';
+import { CommentList } from '@/components/comments/CommentList';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { formatDate } from '@/utils/formatters';
+import { usePermissions } from '@/hooks/usePermissions';
+import { commentService } from '@/services/commentService';
+import type { Comment } from '@/types/project';
+import { ArrowLeft, AlertCircle, Info } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 export const ProjectDetail = () => {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const { hasPermission } = usePermissions()
-  const { toast } = useToast()
-  const [project, setProject] = useState<Project | null>(null)
-  const [items, setItems] = useState<Item[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"overview" | "items" | "workflow" | "comments">("overview")
-  const [showItemForm, setShowItemForm] = useState(false)
-  const [editingItem, setEditingItem] = useState<Item | null>(null)
-  const [comments, setComments] = useState<Comment[]>([])
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
+  const { toast } = useToast();
+  const [project, setProject] = useState<Project | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'items' | 'workflow' | 'comments'>(
+    'overview'
+  );
+  const [showItemForm, setShowItemForm] = useState(false);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
     if (id) {
-      loadProject()
-      loadItems()
-      loadComments()
+      loadProject();
+      loadItems();
+      loadComments();
     }
-  }, [id])
+  }, [id]);
 
   const loadComments = async () => {
     try {
       if (id) {
-        const data = await commentService.getByProject(id)
-        setComments(data)
+        const data = await commentService.getByProject(id);
+        setComments(data);
       }
     } catch (err: any) {
-      console.error("Failed to load comments:", err)
+      console.error('Failed to load comments:', err);
     }
-  }
+  };
 
   const loadProject = async () => {
     try {
-      setLoading(true)
-      const data = await projectService.getById(id!)
-      setProject(data)
-      setError(null)
+      setLoading(true);
+      const data = await projectService.getById(id!);
+      setProject(data);
+      setError(null);
     } catch (err: any) {
-      setError(err.message || "Failed to load project")
+      setError(err.message || 'Failed to load project');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const loadItems = async () => {
     try {
       if (id) {
-        const data = await itemService.getByProject(id)
-        setItems(data)
+        const data = await itemService.getByProject(id);
+        setItems(data);
       }
     } catch (err: any) {
-      console.error("Failed to load items:", err)
+      console.error('Failed to load items:', err);
     }
-  }
+  };
 
   const handleAdvanceWorkflow = async (comment?: string) => {
-    if (!id) return
+    if (!id) return;
     try {
-      await projectService.advanceWorkflow(id, comment)
-      await loadProject()
+      await projectService.advanceWorkflow(id, comment);
+      await loadProject();
       toast({
-        title: "Workflow Advanced",
-        description: "The workflow has been successfully advanced to the next stage.",
-      })
+        title: 'Workflow Advanced',
+        description: 'The workflow has been successfully advanced to the next stage.',
+      });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || "Failed to advance workflow"
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to advance workflow';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
-      })
-      throw err
+        variant: 'destructive',
+      });
+      throw err;
     }
-  }
+  };
 
   const handleMoveBackWorkflow = async (comment?: string) => {
-    if (!id) return
+    if (!id) return;
     try {
-      await projectService.moveBackWorkflow(id, comment)
-      await loadProject()
+      await projectService.moveBackWorkflow(id, comment);
+      await loadProject();
       toast({
-        title: "Workflow Moved Back",
-        description: "The workflow has been successfully moved back to the previous stage.",
-      })
+        title: 'Workflow Moved Back',
+        description: 'The workflow has been successfully moved back to the previous stage.',
+      });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || "Failed to move back workflow"
+      const errorMessage =
+        err.response?.data?.error || err.message || 'Failed to move back workflow';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
-      })
-      throw err
+        variant: 'destructive',
+      });
+      throw err;
     }
-  }
+  };
 
   const handleCreateItem = async (data: Partial<Item>) => {
-    if (!id) return
+    if (!id) return;
     try {
-      await itemService.create(id, data)
-      await loadItems()
-      setShowItemForm(false)
+      await itemService.create(id, data);
+      await loadItems();
+      setShowItemForm(false);
       toast({
-        title: "Item Created",
-        description: "The item has been successfully created.",
-      })
+        title: 'Item Created',
+        description: 'The item has been successfully created.',
+      });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || "Failed to create item"
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to create item';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
-      })
-      throw err
+        variant: 'destructive',
+      });
+      throw err;
     }
-  }
+  };
 
   const handleUpdateItem = async (data: Partial<Item>) => {
-    if (!editingItem) return
+    if (!editingItem) return;
     try {
-      await itemService.update(editingItem.id, data)
-      await loadItems()
-      setShowItemForm(false)
-      setEditingItem(null)
+      await itemService.update(editingItem.id, data);
+      await loadItems();
+      setShowItemForm(false);
+      setEditingItem(null);
       toast({
-        title: "Item Updated",
-        description: "The item has been successfully updated.",
-      })
+        title: 'Item Updated',
+        description: 'The item has been successfully updated.',
+      });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || "Failed to update item"
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to update item';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
-      })
-      throw err
+        variant: 'destructive',
+      });
+      throw err;
     }
-  }
+  };
 
   const handleDeleteItem = async (itemId: string) => {
-    if (!confirm("Are you sure you want to delete this item?")) return
+    if (!confirm('Are you sure you want to delete this item?')) return;
     try {
-      await itemService.delete(itemId)
-      await loadItems()
+      await itemService.delete(itemId);
+      await loadItems();
       toast({
-        title: "Item Deleted",
-        description: "The item has been successfully deleted.",
-      })
+        title: 'Item Deleted',
+        description: 'The item has been successfully deleted.',
+      });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.message || "Failed to delete item"
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to delete item';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
-      })
+        variant: 'destructive',
+      });
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   if (error || !project) {
@@ -194,24 +197,24 @@ export const ProjectDetail = () => {
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription className="flex items-center justify-between">
-          <span>Error: {error || "Project not found"}</span>
-          <Button onClick={() => navigate("/projects")} variant="outline" size="sm" className="ml-4">
+          <span>Error: {error || 'Project not found'}</span>
+          <Button
+            onClick={() => navigate('/projects')}
+            variant="outline"
+            size="sm"
+            className="ml-4"
+          >
             Back to Projects
           </Button>
         </AlertDescription>
       </Alert>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <Button
-          onClick={() => navigate("/projects")}
-          variant="ghost"
-          size="sm"
-          className="mb-4"
-        >
+        <Button onClick={() => navigate('/projects')} variant="ghost" size="sm" className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Projects
         </Button>
@@ -279,16 +282,16 @@ export const ProjectDetail = () => {
               projectId={project.id}
               onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
               onCancel={() => {
-                setShowItemForm(false)
-                setEditingItem(null)
+                setShowItemForm(false);
+                setEditingItem(null);
               }}
             />
           ) : (
             <ItemList
               items={items}
               onEdit={(item) => {
-                setEditingItem(item)
-                setShowItemForm(true)
+                setEditingItem(item);
+                setShowItemForm(true);
               }}
               onDelete={handleDeleteItem}
               onCreateNew={() => setShowItemForm(true)}
@@ -298,19 +301,17 @@ export const ProjectDetail = () => {
 
         <TabsContent value="workflow" className="space-y-6">
           {project.workflowSteps && (
-            <WorkflowTimeline
-              steps={project.workflowSteps}
-              currentStage={project.currentStage}
-            />
+            <WorkflowTimeline steps={project.workflowSteps} currentStage={project.currentStage} />
           )}
 
           {/* Role-specific workflow actions */}
-          {project.currentStage === "KINEXO Pricing" && hasPermission("SUBMIT_PRICING") && (
+          {project.currentStage === 'KINEXO Pricing' && hasPermission('SUBMIT_PRICING') && (
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription className="flex items-center justify-between">
                 <span>
-                  This project is at the KINEXO Pricing stage. Use the dedicated pricing interface to review and submit pricing.
+                  This project is at the KINEXO Pricing stage. Use the dedicated pricing interface
+                  to review and submit pricing.
                 </span>
                 <Button
                   onClick={() => navigate(`/projects/${project.id}/pricing`)}
@@ -323,12 +324,13 @@ export const ProjectDetail = () => {
             </Alert>
           )}
 
-          {project.currentStage === "Freight Strategy" && hasPermission("UPDATE_ITEM") && (
+          {project.currentStage === 'Freight Strategy' && hasPermission('UPDATE_ITEM') && (
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription className="flex items-center justify-between">
                 <span>
-                  This project is at the Freight Strategy stage. Use the dedicated logistics interface to set freight strategy.
+                  This project is at the Freight Strategy stage. Use the dedicated logistics
+                  interface to set freight strategy.
                 </span>
                 <Button
                   onClick={() => navigate(`/projects/${project.id}/freight`)}
@@ -344,7 +346,7 @@ export const ProjectDetail = () => {
           <WorkflowControls
             projectId={project.id}
             currentStage={project.currentStage}
-            canAdvance={project.status !== "COMPLETED"}
+            canAdvance={project.status !== 'COMPLETED'}
             canMoveBack={true}
             onAdvance={handleAdvanceWorkflow}
             onMoveBack={handleMoveBackWorkflow}
@@ -352,13 +354,9 @@ export const ProjectDetail = () => {
         </TabsContent>
 
         <TabsContent value="comments" className="space-y-6">
-          <CommentList
-            projectId={project.id}
-            comments={comments}
-            onCommentAdded={loadComments}
-          />
+          <CommentList projectId={project.id} comments={comments} onCommentAdded={loadComments} />
         </TabsContent>
       </Tabs>
     </div>
-  )
-}
+  );
+};

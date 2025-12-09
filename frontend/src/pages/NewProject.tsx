@@ -1,44 +1,44 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { projectService } from "@/services/projectService"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { projectService } from '@/services/projectService';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Loader2 } from "lucide-react"
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 export const NewProject = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    lifecycleType: "NEW_ITEM" as const,
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+    name: '',
+    description: '',
+    lifecycleType: 'NEW_ITEM' as const,
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      setLoading(true)
-      setError(null)
-      const project = await projectService.create(formData)
-      navigate(`/projects/${project.id}`)
+      setLoading(true);
+      setError(null);
+      const project = await projectService.create(formData);
+      navigate(`/projects/${project.id}`);
     } catch (err: any) {
-      setError(err.message || "Failed to create project")
+      setError(err.message || 'Failed to create project');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -102,7 +102,7 @@ export const NewProject = () => {
             </div>
 
             <div className="flex justify-end space-x-4 pt-4">
-              <Button type="button" variant="outline" onClick={() => navigate("/projects")}>
+              <Button type="button" variant="outline" onClick={() => navigate('/projects')}>
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
@@ -112,7 +112,7 @@ export const NewProject = () => {
                     Creating...
                   </>
                 ) : (
-                  "Create Project"
+                  'Create Project'
                 )}
               </Button>
             </div>
@@ -120,5 +120,5 @@ export const NewProject = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};

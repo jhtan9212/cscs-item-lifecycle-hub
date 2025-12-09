@@ -3,7 +3,7 @@ import prisma from '../config/database';
 import { NotificationService } from '../services/notificationService';
 import { TaskService } from '../services/taskService';
 
-export const getDashboardStats = async (req: Request, res: Response) => {
+export const getDashboardStats = async (req: Request, res: Response): Promise<Response> => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -64,7 +64,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       lifecycleCounts[item.lifecycleType] = item._count;
     });
 
-    res.json({
+    return res.json({
       totalProjects,
       activeProjects,
       completedProjects,
@@ -77,7 +77,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       recentTasks: pendingTasks.slice(0, 5),
     });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

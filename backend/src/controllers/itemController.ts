@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
 
-export const getItemsByProject = async (req: Request, res: Response) => {
+export const getItemsByProject = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { projectId } = req.params;
 
@@ -12,13 +12,13 @@ export const getItemsByProject = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(items);
+    return res.json(items);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const getItem = async (req: Request, res: Response) => {
+export const getItem = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -33,13 +33,13 @@ export const getItem = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Item not found' });
     }
 
-    res.json(item);
+    return res.json(item);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const createItem = async (req: Request, res: Response) => {
+export const createItem = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { projectId } = req.params;
     const {
@@ -162,9 +162,9 @@ export const createItem = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(201).json(item);
+    return res.status(201).json(item);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
@@ -259,13 +259,13 @@ export const updateItem = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(updatedItem);
+    return res.json(updatedItem);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-export const deleteItem = async (req: Request, res: Response) => {
+export const deleteItem = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
 
@@ -299,9 +299,9 @@ export const deleteItem = async (req: Request, res: Response) => {
       },
     });
 
-    res.json({ message: 'Item deleted successfully' });
+    return res.json({ message: 'Item deleted successfully' });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 };
 

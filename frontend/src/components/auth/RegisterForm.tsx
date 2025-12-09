@@ -1,78 +1,78 @@
-import { useState, useEffect } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import { useAuth } from "@/context/AuthContext"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AuthLayout } from "@/components/layouts/AuthLayout"
-import { AlertCircle, Loader2 } from "lucide-react"
-import api from "@/services/api"
+} from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AuthLayout } from '@/components/layouts/AuthLayout';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import api from '@/services/api';
 
 interface Role {
-  id: string
-  name: string
-  description?: string
+  id: string;
+  name: string;
+  description?: string;
 }
 
 export const RegisterForm = () => {
   const [formData, setFormData] = useState({
-    email: "",
-    name: "",
-    password: "",
-    confirmPassword: "",
-    roleId: "",
-  })
-  const [roles, setRoles] = useState<Role[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [loadingRoles, setLoadingRoles] = useState(true)
-  const { register } = useAuth()
-  const navigate = useNavigate()
+    email: '',
+    name: '',
+    password: '',
+    confirmPassword: '',
+    roleId: '',
+  });
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingRoles, setLoadingRoles] = useState(true);
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await api.get("/roles")
+        const response = await api.get('/roles');
         if (response.data) {
-          setRoles(response.data)
-          const cmRole = response.data.find((r: Role) => r.name === "Category Manager")
+          setRoles(response.data);
+          const cmRole = response.data.find((r: Role) => r.name === 'Category Manager');
           if (cmRole) {
-            setFormData((prev) => ({ ...prev, roleId: cmRole.id }))
+            setFormData((prev) => ({ ...prev, roleId: cmRole.id }));
           }
         }
       } catch (err) {
-        console.error("Failed to fetch roles:", err)
+        console.error('Failed to fetch roles:', err);
       } finally {
-        setLoadingRoles(false)
+        setLoadingRoles(false);
       }
-    }
-    fetchRoles()
-  }, [])
+    };
+    fetchRoles();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      return
+      setError('Passwords do not match');
+      return;
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
-      return
+      setError('Password must be at least 6 characters');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       await register(
@@ -80,25 +80,22 @@ export const RegisterForm = () => {
         formData.name,
         formData.password,
         formData.roleId || undefined
-      )
-      navigate("/")
+      );
+      navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || "Registration failed. Please try again.")
+      setError(err.response?.data?.error || 'Registration failed. Please try again.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <AuthLayout
-      title="Create your account"
-      description="Enter your information to get started"
-    >
+    <AuthLayout title="Create your account" description="Enter your information to get started">
       <Card>
         <CardHeader>
           <CardTitle>Sign Up</CardTitle>
           <CardDescription>
-            Already have an account?{" "}
+            Already have an account?{' '}
             <Link to="/login" className="text-primary hover:underline font-medium">
               Sign in to existing account
             </Link>
@@ -140,7 +137,10 @@ export const RegisterForm = () => {
 
             <div className="space-y-2">
               <Label htmlFor="role">
-                Role {loadingRoles && <span className="text-muted-foreground text-xs">(Loading...)</span>}
+                Role{' '}
+                {loadingRoles && (
+                  <span className="text-muted-foreground text-xs">(Loading...)</span>
+                )}
               </Label>
               <Select
                 value={formData.roleId}
@@ -199,12 +199,12 @@ export const RegisterForm = () => {
                   Creating Account...
                 </>
               ) : (
-                "Create Account"
+                'Create Account'
               )}
             </Button>
           </form>
         </CardContent>
       </Card>
     </AuthLayout>
-  )
-}
+  );
+};
