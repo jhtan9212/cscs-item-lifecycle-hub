@@ -3,7 +3,6 @@ import { versionService, type ItemVersion, type ProjectVersion } from '@/service
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDateTime } from '@/utils/formatters';
 import { History, FileText, Package } from 'lucide-react';
@@ -84,7 +83,6 @@ export const VersionHistory = ({ entityType, entityId }: VersionHistoryProps) =>
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Version List */}
       <Card className="lg:col-span-1">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -125,7 +123,6 @@ export const VersionHistory = ({ entityType, entityId }: VersionHistoryProps) =>
         </CardContent>
       </Card>
 
-      {/* Version Details */}
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

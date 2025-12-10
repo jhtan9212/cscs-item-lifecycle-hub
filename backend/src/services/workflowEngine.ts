@@ -102,19 +102,16 @@ export class WorkflowEngine {
       return { canAdvance: false, reason: 'No active workflow step found' };
     }
 
-    // Check if current step is completed
     if (currentStep.status !== StepStatus.COMPLETED && currentStep.status !== StepStatus.IN_PROGRESS) {
       return { canAdvance: false, reason: 'Current step must be in progress or completed' };
     }
 
-    // Check if it's the final stage
     const stages = this.getStagesForLifecycle(project.lifecycleType);
     const isFinalStage = currentStep.stepOrder >= stages.length;
     if (isFinalStage) {
       return { canAdvance: false, reason: 'Already at final stage' };
     }
 
-    // Role-based authorization: Check if user's role matches the required role of the current step
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { role: true },
@@ -124,14 +121,11 @@ export class WorkflowEngine {
       return { canAdvance: false, reason: 'User not found' };
     }
 
-    // Admin can always advance
     if (user.role.isAdmin) {
       return { canAdvance: true };
     }
 
-    // Organization boundary check: Non-admin users can only advance workflows for projects in their organization
     if (user.organizationId && project.organizationId) {
-      // Both have organization - must match
       if (project.organizationId !== user.organizationId) {
         return {
           canAdvance: false,
@@ -139,22 +133,17 @@ export class WorkflowEngine {
         };
       }
     } else if (user.organizationId && !project.organizationId) {
-      // User has org but project doesn't - not allowed
       return {
         canAdvance: false,
         reason: 'You can only advance workflows for projects in your organization',
       };
     } else if (!user.organizationId && project.organizationId) {
-      // User has no org but project does - not allowed
       return {
         canAdvance: false,
         reason: 'You can only advance workflows for projects in your organization',
       };
     }
-    // Both have no organization or both match - continue with role check
 
-    // If current step has a requiredRole, user's role must match
-    // Prefer workflow definition over database value to handle cases where database has incorrect requiredRole
     const expectedRole = stages.find((s) => s.name === currentStep.stepName)?.requiredRole;
     const effectiveRequiredRole = expectedRole || currentStep.requiredRole;
     
@@ -193,7 +182,6 @@ export class WorkflowEngine {
     const nextStepOrder = currentStep.stepOrder + 1;
     const nextStage = stages.find((s) => s.order === nextStepOrder);
 
-    // Mark current step as completed
     await prisma.workflowStep.update({
       where: { id: currentStep.id },
       data: {
@@ -203,7 +191,6 @@ export class WorkflowEngine {
       },
     });
 
-    // Complete tasks for the current stage
     try {
       const currentStageRole = currentStep.requiredRole;
       if (currentStageRole) {
@@ -222,11 +209,9 @@ export class WorkflowEngine {
         });
       }
     } catch (error) {
-      // Log but don't fail workflow advancement
       logger.error('Error completing tasks:', error);
     }
 
-    // Activate next step
     const nextStep = await prisma.workflowStep.findFirst({
       where: {
         projectId,
@@ -243,7 +228,6 @@ export class WorkflowEngine {
       });
     }
 
-    // Update project current stage and status
     const newStatus = nextStage?.name === 'Completed' ? 'COMPLETED' : 'IN_PROGRESS';
     await prisma.project.update({
       where: { id: projectId },
@@ -254,15 +238,12 @@ export class WorkflowEngine {
       },
     });
 
-    // Create project version snapshot before workflow change
     try {
       await VersionService.createProjectVersion(projectId, userId);
     } catch (error) {
       logger.error('Error creating project version:', { projectId, error });
-      // Don't fail workflow advancement if version creation fails
     }
 
-    // Create lifecycle event for workflow advancement
     try {
       await EventService.createEvent('WORKFLOW_ADVANCED', {
         entityType: 'PROJECT',
@@ -278,10 +259,8 @@ export class WorkflowEngine {
       });
     } catch (error) {
       logger.error('Error creating lifecycle event:', { projectId, error });
-      // Don't fail workflow advancement if event creation fails
     }
 
-    // Create audit log
     await prisma.auditLog.create({
       data: {
         projectId,
@@ -313,7 +292,6 @@ export class WorkflowEngine {
       }
     }
 
-    // Send notifications (Part 2)
     try {
       const project = await prisma.project.findUnique({
         where: { id: projectId },
@@ -321,7 +299,6 @@ export class WorkflowEngine {
       });
 
       if (project && nextStage) {
-        // Notify project creator
         await NotificationService.create({
           userId: project.createdById,
           type: 'STAGE_CHANGE',
@@ -346,8 +323,6 @@ export class WorkflowEngine {
             }
           );
 
-          // Create task for the role
-          // Set due date to 7 days from now
           const dueDate = new Date();
           dueDate.setDate(dueDate.getDate() + 7);
 
@@ -363,7 +338,6 @@ export class WorkflowEngine {
         }
       }
     } catch (error) {
-      // Log but don't fail workflow advancement
       console.error('Error sending notifications:', error);
     }
 
@@ -391,7 +365,6 @@ export class WorkflowEngine {
       return { canMoveBack: false, reason: 'Project not found' };
     }
 
-    // Role-based authorization: Check if user's role matches the required role of the current step
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { role: true },
@@ -401,14 +374,11 @@ export class WorkflowEngine {
       return { canMoveBack: false, reason: 'User not found' };
     }
 
-    // Admin can always move back
     if (user.role.isAdmin) {
       return { canMoveBack: true };
     }
 
-    // Organization boundary check: Non-admin users can only move back workflows for projects in their organization
     if (user.organizationId && project.organizationId) {
-      // Both have organization - must match
       if (project.organizationId !== user.organizationId) {
         return {
           canMoveBack: false,
@@ -416,22 +386,17 @@ export class WorkflowEngine {
         };
       }
     } else if (user.organizationId && !project.organizationId) {
-      // User has org but project doesn't - not allowed
       return {
         canMoveBack: false,
         reason: 'You can only move back workflows for projects in your organization',
       };
     } else if (!user.organizationId && project.organizationId) {
-      // User has no org but project does - not allowed
       return {
         canMoveBack: false,
         reason: 'You can only move back workflows for projects in your organization',
       };
     }
-    // Both have no organization or both match - continue with role check
 
-    // If current step has a requiredRole, user's role must match
-    // Prefer workflow definition over database value to handle cases where database has incorrect requiredRole
     const stages = this.getStagesForLifecycle(project.lifecycleType);
     const expectedRole = stages.find((s) => s.name === currentStep.stepName)?.requiredRole;
     const effectiveRequiredRole = expectedRole || currentStep.requiredRole;
@@ -470,7 +435,6 @@ export class WorkflowEngine {
 
     const previousStepOrder = currentStep.stepOrder - 1;
 
-    // Mark current step as pending
     await prisma.workflowStep.update({
       where: { id: currentStep.id },
       data: {
@@ -480,7 +444,6 @@ export class WorkflowEngine {
       },
     });
 
-    // Activate previous step
     const previousStep = await prisma.workflowStep.findFirst({
       where: {
         projectId,
@@ -497,7 +460,6 @@ export class WorkflowEngine {
       });
     }
 
-    // Update project current stage
     const stages = this.getStagesForLifecycle(project.lifecycleType);
     const previousStage = stages.find((s) => s.order === previousStepOrder);
 
@@ -509,15 +471,12 @@ export class WorkflowEngine {
       },
     });
 
-    // Create project version snapshot before workflow change
     try {
       await VersionService.createProjectVersion(projectId, userId);
     } catch (error) {
       logger.error('Error creating project version:', { projectId, error });
-      // Don't fail workflow move back if version creation fails
     }
 
-    // Create lifecycle event for workflow move back
     try {
       await EventService.createEvent('WORKFLOW_MOVED_BACK', {
         entityType: 'PROJECT',
@@ -533,10 +492,8 @@ export class WorkflowEngine {
       });
     } catch (error) {
       logger.error('Error creating lifecycle event:', { projectId, error });
-      // Don't fail workflow move back if event creation fails
     }
 
-    // Create audit log
     await prisma.auditLog.create({
       data: {
         projectId,

@@ -35,7 +35,6 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
-  AlertCircle,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';

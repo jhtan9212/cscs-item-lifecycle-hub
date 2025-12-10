@@ -233,7 +233,6 @@ export const RolePermissionMatrix = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -257,7 +256,6 @@ export const RolePermissionMatrix = () => {
           </select>
         </div>
 
-        {/* Table */}
         <div className="border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <Table>

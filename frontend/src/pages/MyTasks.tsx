@@ -9,7 +9,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import { RefreshCw } from 'lucide-react';
 import { getErrorMessage } from '@/lib/errorUtils';
 
 export const MyTasks = () => {

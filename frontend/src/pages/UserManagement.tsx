@@ -342,7 +342,6 @@ export const UserManagement = () => {
         </Dialog>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -382,7 +381,6 @@ export const UserManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Users Table */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -548,7 +546,6 @@ export const UserManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Edit User Dialog */}
       {editingUser && (
         <EditUserDialog
           user={editingUser}

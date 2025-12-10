@@ -134,7 +134,6 @@ export const Events = () => {
         </Button>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -241,7 +240,6 @@ export const Events = () => {
         </CardContent>
       </Card>
 
-      {/* Events List */}
       <div className="space-y-3">
         {events.length === 0 ? (
           <Card>

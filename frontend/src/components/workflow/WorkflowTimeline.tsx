@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import type { WorkflowStep } from '@/types/project';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Circle, Clock, AlertCircle, XCircle } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WorkflowTimelineProps {
@@ -44,7 +44,7 @@ const getStageColor = (stageName: string, status: 'completed' | 'current' | 'pen
   return 'bg-muted border-2 border-muted-foreground/20 text-muted-foreground';
 };
 
-export const WorkflowTimeline: FC<WorkflowTimelineProps> = ({ steps, currentStage, lifecycleType }) => {
+export const WorkflowTimeline: FC<WorkflowTimelineProps> = ({ steps, currentStage }) => {
   const getStepStatus = (step: WorkflowStep): 'completed' | 'current' | 'pending' | 'rejected' => {
     if (step.status === 'COMPLETED') return 'completed';
     if (step.status === 'REJECTED') return 'rejected';
@@ -89,13 +89,6 @@ export const WorkflowTimeline: FC<WorkflowTimelineProps> = ({ steps, currentStag
     if (status === 'rejected') return 'bg-red-500 dark:bg-red-600';
     if (status === 'current') return 'bg-primary';
     return 'bg-muted';
-  };
-
-  const getStageBadgeVariant = (status: 'completed' | 'current' | 'pending' | 'rejected') => {
-    if (status === 'completed') return 'default';
-    if (status === 'rejected') return 'destructive';
-    if (status === 'current') return 'default';
-    return 'outline';
   };
 
   return (

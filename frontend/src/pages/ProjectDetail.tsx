@@ -357,7 +357,6 @@ export const ProjectDetail = () => {
             />
           )}
 
-          {/* Role-specific workflow actions */}
           {project.currentStage === 'KINEXO Pricing' && hasPermission('SUBMIT_PRICING') && (
             <Alert>
               <Info className="h-4 w-4" />

@@ -151,7 +151,6 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information - Show for Category Manager, Strategic Supply, Pricing Specialist, Logistics, and Admin */}
       {(isCategoryManager || isStrategicSupply || isPricingSpecialist || isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
@@ -176,7 +175,6 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       )}
 
-      {/* Category Manager Fields - Show for Category Manager, Strategic Supply, Pricing Specialist, Logistics, and Admin */}
       {(isCategoryManager || isStrategicSupply || isPricingSpecialist || isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.CATEGORY_MANAGER.owner} />
@@ -186,25 +184,24 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
               label="CM Item Number"
               value={formData.cmItemNumber}
               onChange={(e) => setFormData({ ...formData, cmItemNumber: e.target.value })}
-              disabled={Boolean(!isCategoryManager && !isAdmin && item?.id)} // Read-only for other roles when editing
+              disabled={!isCategoryManager && !isAdmin && !!item?.id}
             />
             <Input
               label="CM Description"
               value={formData.cmDescription}
               onChange={(e) => setFormData({ ...formData, cmDescription: e.target.value })}
-              disabled={Boolean(!isCategoryManager && !isAdmin && item?.id)} // Read-only for other roles when editing
+              disabled={!isCategoryManager && !isAdmin && !!item?.id}
             />
             <Input
               label="CM Category"
               value={formData.cmCategory}
               onChange={(e) => setFormData({ ...formData, cmCategory: e.target.value })}
-              disabled={Boolean(!isCategoryManager && !isAdmin && item?.id)} // Read-only for other roles when editing
+              disabled={!isCategoryManager && !isAdmin && !!item?.id}
             />
           </div>
         </div>
       )}
 
-      {/* Strategic Supply Fields - Show for Strategic Supply Manager, Pricing Specialist, Logistics, and Admin */}
       {(isStrategicSupply || isPricingSpecialist || isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.STRATEGIC_SUPPLY.owner} />
@@ -214,13 +211,12 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
               label="Supplier"
               value={formData.ssSupplier}
               onChange={(e) => setFormData({ ...formData, ssSupplier: e.target.value })}
-              disabled={!isStrategicSupply && !isAdmin && !!item?.id} // Read-only for other roles when editing
+              disabled={!isStrategicSupply && !isAdmin && !!item?.id}
             />
           </div>
         </div>
       )}
 
-      {/* Pricing Specialist Fields - Show for Pricing Specialist, Logistics, and Admin */}
       {(isPricingSpecialist || isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.PRICING_SPECIALIST.owner} />
@@ -234,7 +230,7 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
               onChange={(e) =>
                 setFormData({ ...formData, supplierPrice: parseFloat(e.target.value) || undefined })
               }
-              disabled={!isPricingSpecialist && !isAdmin && !!item?.id} // Read-only for Logistics when editing
+              disabled={!isPricingSpecialist && !isAdmin && !!item?.id}
             />
             <Input
               label="KINEXO Price"
@@ -244,13 +240,12 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
               onChange={(e) =>
                 setFormData({ ...formData, kinexoPrice: parseFloat(e.target.value) || undefined })
               }
-              disabled={!isPricingSpecialist && !isAdmin && !!item?.id} // Read-only for Logistics when editing
+              disabled={!isPricingSpecialist && !isAdmin && !!item?.id}
             />
           </div>
         </div>
       )}
 
-      {/* Logistics Fields - Show for Logistics and Admin */}
       {(isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.LOGISTICS.owner} />
@@ -291,7 +286,6 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       )}
 
-      {/* Supplier Fields - Show for Supplier and Admin */}
       {(isSupplier || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
         <FieldOwnershipLabel owner={FIELD_OWNERSHIP.SUPPLIER.owner} />
@@ -341,7 +335,6 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
       </div>
       )}
 
-      {/* DC Operator Fields - Only show to DC Operator */}
       {isDCOperator && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.DC_OPERATOR.owner} />

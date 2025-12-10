@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { dashboardService, type DashboardStats } from '@/services/dashboardService';
 import { useAuth } from '@/context/AuthContext';
 import { formatDate } from '@/utils/formatters';
@@ -21,8 +20,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LineChart,
-  Line,
   AreaChart,
   Area,
   ComposedChart,
@@ -97,7 +94,6 @@ export const Dashboard = () => {
         </p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {loading ? (
           <>
@@ -135,7 +131,6 @@ export const Dashboard = () => {
         )}
       </div>
 
-      {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -185,7 +180,6 @@ export const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Recent Projects */}
       {stats?.recentProjects && stats.recentProjects.length > 0 && (
         <Card>
           <CardHeader>
@@ -227,12 +221,9 @@ export const Dashboard = () => {
         </Card>
       )}
 
-      {/* Analytics Charts */}
       {stats && (
         <div className="space-y-6">
-          {/* First Row: Status and Lifecycle Charts */}
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Projects by Status - Enhanced Bar Chart */}
             {Object.keys(stats.projectsByStatus).length > 0 && (
               <Card>
                 <CardHeader>
@@ -292,7 +283,6 @@ export const Dashboard = () => {
               </Card>
             )}
 
-            {/* Projects by Lifecycle - Enhanced Pie Chart */}
             {Object.keys(stats.projectsByLifecycle).length > 0 && (
               <Card>
                 <CardHeader>
@@ -314,7 +304,7 @@ export const Dashboard = () => {
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent, value }) => 
-                          `${name}: ${value} (${(percent * 100).toFixed(1)}%)`
+                          `${name}: ${value} (${((percent || 0) * 100).toFixed(1)}%)`
                         }
                         outerRadius={100}
                         innerRadius={40}
@@ -359,9 +349,7 @@ export const Dashboard = () => {
             )}
           </div>
 
-          {/* Second Row: Project Overview and Completion Rate */}
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Project Overview - Composed Chart */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -426,7 +414,6 @@ export const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Completion Rate - Area Chart */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -513,9 +500,7 @@ export const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Third Row: Task and Notification Trends */}
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Task Status Overview */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -571,7 +556,6 @@ export const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Notification Status */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -626,7 +610,6 @@ export const Dashboard = () => {
         </div>
       )}
 
-      {/* Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
