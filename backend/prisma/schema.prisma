@@ -29,6 +29,8 @@ model User {
   auditLogs     AuditLog[]
   notifications Notification[]
   tasks         Task[]
+  itemVersions  ItemVersion[]
+  projectVersions ProjectVersion[]
   
   @@index([organizationId])
   @@map("users")
@@ -188,6 +190,7 @@ model ItemVersion {
   data          String   // JSON string of full item data at this version
   
   createdById   String?
+  createdBy     User?    @relation(fields: [createdById], references: [id])
   createdAt     DateTime @default(now())
   
   @@index([itemId, versionNumber])
@@ -204,6 +207,7 @@ model ProjectVersion {
   data          String   // JSON string of full project data at this version
   
   createdById   String?
+  createdBy     User?    @relation(fields: [createdById], references: [id])
   createdAt     DateTime @default(now())
   
   @@index([projectId, versionNumber])

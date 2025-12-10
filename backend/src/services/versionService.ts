@@ -97,6 +97,13 @@ export class VersionService {
               name: true,
             },
           },
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
       });
     } catch (error: any) {
@@ -121,6 +128,13 @@ export class VersionService {
               projectNumber: true,
             },
           },
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
       });
     } catch (error: any) {
@@ -138,6 +152,15 @@ export class VersionService {
         where: {
           itemId,
           versionNumber,
+        },
+        include: {
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
       });
 
@@ -164,6 +187,15 @@ export class VersionService {
         where: {
           projectId,
           versionNumber,
+        },
+        include: {
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
       });
 
