@@ -29,6 +29,7 @@ import {
   CheckSquare,
   Bell,
   Building2,
+  Activity,
 } from 'lucide-react';
 
 interface AppLayoutProps {
@@ -40,6 +41,7 @@ const navigation = [
   { name: 'Projects', href: '/projects', icon: FolderKanban },
   { name: 'My Tasks', href: '/my-tasks', icon: CheckSquare },
   { name: 'Notifications', href: '/notifications', icon: Bell },
+  { name: 'Events', href: '/events', icon: Activity, permission: 'VIEW_PROJECT' },
 ];
 
 const adminNavigation = [
@@ -91,6 +93,10 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navigation.map((item) => {
+          // Check permission if required
+          if (item.permission && !hasPermission(item.permission)) {
+            return null;
+          }
           const Icon = item.icon;
           return (
             <Link

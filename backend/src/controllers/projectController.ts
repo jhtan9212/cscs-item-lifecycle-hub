@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import prisma from '../config/database';
 import { generateProjectNumber } from '../utils/helpers';
 import { WorkflowEngine } from '../services/workflowEngine';
+import { VersionService } from '../services/versionService';
+import { EventService } from '../services/eventService';
 
 export const getAllProjects = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -432,11 +434,37 @@ export const updateProject = async (req: Request, res: Response): Promise<Respon
       },
     });
 
+    // Create project version snapshot before update
+    if (req.user) {
+      try {
+        await VersionService.createProjectVersion(id, req.user.userId);
+      } catch (error) {
+        console.error('Error creating project version:', error);
+        // Don't fail project update if version creation fails
+      }
+
+      // Create lifecycle event for project update
+      try {
+        await EventService.createEvent('PROJECT_UPDATED', {
+          entityType: 'PROJECT',
+          entityId: id,
+          action: 'UPDATE',
+          userId: req.user.userId,
+          data: {
+            changes: { name, description, lifecycleType, status },
+          },
+        });
+      } catch (error) {
+        console.error('Error creating lifecycle event:', error);
+        // Don't fail project update if event creation fails
+      }
+    }
+
     // Create audit log
     await prisma.auditLog.create({
       data: {
         projectId: id,
-        userId: project.createdById,
+        userId: req.user?.userId || project.createdById,
         action: 'UPDATE_PROJECT',
         entityType: 'PROJECT',
         entityId: id,

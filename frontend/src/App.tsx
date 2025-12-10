@@ -19,6 +19,7 @@ import { PricingWorkflow } from './pages/PricingWorkflow';
 import { LogisticsWorkflow } from './pages/LogisticsWorkflow';
 import { Notifications } from './pages/Notifications';
 import { Tasks } from './pages/Tasks';
+import { Events } from './pages/Events';
 import './App.css';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
                       <Route path="/my-tasks" element={<MyTasks />} />
                       <Route path="/tasks" element={<Tasks />} />
                       <Route path="/notifications" element={<Notifications />} />
+                      <Route path="/events" element={<Events />} />
                       <Route path="/projects" element={<Projects />} />
                       <Route path="/projects/new" element={<NewProject />} />
                       <Route path="/projects/:id" element={<ProjectDetail />} />

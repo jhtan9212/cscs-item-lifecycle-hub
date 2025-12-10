@@ -2,6 +2,8 @@ import prisma from '../config/database';
 import { LifecycleType, StepStatus } from '@prisma/client';
 import { NotificationService } from './notificationService';
 import { TaskService } from './taskService';
+import { VersionService } from './versionService';
+import { EventService } from './eventService';
 import { logger } from '../utils/logger';
 
 // Workflow stage definitions
@@ -227,6 +229,33 @@ export class WorkflowEngine {
       },
     });
 
+    // Create project version snapshot before workflow change
+    try {
+      await VersionService.createProjectVersion(projectId, userId);
+    } catch (error) {
+      logger.error('Error creating project version:', { projectId, error });
+      // Don't fail workflow advancement if version creation fails
+    }
+
+    // Create lifecycle event for workflow advancement
+    try {
+      await EventService.createEvent('WORKFLOW_ADVANCED', {
+        entityType: 'PROJECT',
+        entityId: projectId,
+        action: 'ADVANCE',
+        userId,
+        data: {
+          fromStage: currentStep.stepName,
+          toStage: nextStage?.name,
+          stepOrder: currentStep.stepOrder,
+          comment,
+        },
+      });
+    } catch (error) {
+      logger.error('Error creating lifecycle event:', { projectId, error });
+      // Don't fail workflow advancement if event creation fails
+    }
+
     // Create audit log
     await prisma.auditLog.create({
       data: {
@@ -399,6 +428,33 @@ export class WorkflowEngine {
         status: 'IN_PROGRESS',
       },
     });
+
+    // Create project version snapshot before workflow change
+    try {
+      await VersionService.createProjectVersion(projectId, userId);
+    } catch (error) {
+      logger.error('Error creating project version:', { projectId, error });
+      // Don't fail workflow move back if version creation fails
+    }
+
+    // Create lifecycle event for workflow move back
+    try {
+      await EventService.createEvent('WORKFLOW_MOVED_BACK', {
+        entityType: 'PROJECT',
+        entityId: projectId,
+        action: 'MOVE_BACK',
+        userId,
+        data: {
+          fromStage: currentStep.stepName,
+          toStage: previousStage?.name,
+          stepOrder: currentStep.stepOrder,
+          comment,
+        },
+      });
+    } catch (error) {
+      logger.error('Error creating lifecycle event:', { projectId, error });
+      // Don't fail workflow move back if event creation fails
+    }
 
     // Create audit log
     await prisma.auditLog.create({

@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../config/database';
+import { VersionService } from '../services/versionService';
+import { EventService } from '../services/eventService';
 
 export const getItemsByProject = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -247,11 +249,38 @@ export const updateItem = async (req: Request, res: Response) => {
       data: updateData,
     });
 
+    // Create item version snapshot before update
+    if (req.user) {
+      try {
+        await VersionService.createItemVersion(id, req.user.userId);
+      } catch (error) {
+        console.error('Error creating item version:', error);
+        // Don't fail item update if version creation fails
+      }
+
+      // Create lifecycle event for item update
+      try {
+        await EventService.createEvent('ITEM_UPDATED', {
+          entityType: 'ITEM',
+          entityId: id,
+          action: 'UPDATE',
+          userId: req.user.userId,
+          data: {
+            projectId: item.projectId,
+            changes: updateData,
+          },
+        });
+      } catch (error) {
+        console.error('Error creating lifecycle event:', error);
+        // Don't fail item update if event creation fails
+      }
+    }
+
     // Create audit log
     await prisma.auditLog.create({
       data: {
         projectId: item.projectId,
-        userId: item.project.createdById,
+        userId: req.user?.userId || item.project.createdById,
         action: 'UPDATE_ITEM',
         entityType: 'ITEM',
         entityId: id,

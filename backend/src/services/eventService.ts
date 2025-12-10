@@ -72,15 +72,19 @@ export class EventService {
       // Process based on event type
       switch (event.eventType) {
         case 'WORKFLOW_ADVANCE':
+        case 'WORKFLOW_ADVANCED':
           await this.handleWorkflowAdvance(payload);
           break;
         case 'WORKFLOW_MOVE_BACK':
+        case 'WORKFLOW_MOVED_BACK':
           await this.handleWorkflowMoveBack(payload);
           break;
         case 'ITEM_UPDATE':
+        case 'ITEM_UPDATED':
           await this.handleItemUpdate(payload);
           break;
         case 'PROJECT_UPDATE':
+        case 'PROJECT_UPDATED':
           await this.handleProjectUpdate(payload);
           break;
         default:

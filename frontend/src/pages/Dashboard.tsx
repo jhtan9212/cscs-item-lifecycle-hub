@@ -4,10 +4,29 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { dashboardService, type DashboardStats } from '@/services/dashboardService';
 import { useAuth } from '@/context/AuthContext';
 import { formatDate } from '@/utils/formatters';
-import { FolderKanban, CheckSquare, Bell, TrendingUp, FileText } from 'lucide-react';
+import { FolderKanban, CheckSquare, Bell, TrendingUp, FileText, BarChart3, PieChart, LineChart as LineChartIcon, Activity } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  ComposedChart,
+} from 'recharts';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -206,6 +225,405 @@ export const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Analytics Charts */}
+      {stats && (
+        <div className="space-y-6">
+          {/* First Row: Status and Lifecycle Charts */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Projects by Status - Enhanced Bar Chart */}
+            {Object.keys(stats.projectsByStatus).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Projects by Status
+                  </CardTitle>
+                  <CardDescription>Distribution of projects across different statuses</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart
+                      data={Object.entries(stats.projectsByStatus).map(([status, count]) => ({
+                        status: status.replace('_', ' '),
+                        count,
+                        fill: status === 'COMPLETED' 
+                          ? 'hsl(142, 76%, 36%)' 
+                          : status === 'IN_PROGRESS'
+                          ? 'hsl(217, 91%, 60%)'
+                          : 'hsl(var(--muted-foreground))',
+                      }))}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <defs>
+                        <linearGradient id="statusGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="status" 
+                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                        stroke="hsl(var(--border))"
+                      />
+                      <YAxis 
+                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                        stroke="hsl(var(--border))"
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px',
+                        }}
+                      />
+                      <Bar 
+                        dataKey="count" 
+                        fill="url(#statusGradient)"
+                        radius={[8, 8, 0, 0]}
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={1}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Projects by Lifecycle - Enhanced Pie Chart */}
+            {Object.keys(stats.projectsByLifecycle).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PieChart className="h-5 w-5" />
+                    Projects by Lifecycle Type
+                  </CardTitle>
+                  <CardDescription>Distribution of projects across lifecycle types</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <RechartsPieChart>
+                      <Pie
+                        data={Object.entries(stats.projectsByLifecycle).map(([lifecycle, count]) => ({
+                          name: lifecycle.replace(/_/g, ' '),
+                          value: count,
+                        }))}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent, value }) => 
+                          `${name}: ${value} (${(percent * 100).toFixed(1)}%)`
+                        }
+                        outerRadius={100}
+                        innerRadius={40}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {Object.entries(stats.projectsByLifecycle).map((_, index) => {
+                          const colors = [
+                            'hsl(217, 91%, 60%)',  // Blue
+                            'hsl(142, 76%, 36%)',  // Green
+                            'hsl(38, 92%, 50%)',   // Yellow/Orange
+                            'hsl(0, 84%, 60%)',    // Red
+                            'hsl(280, 100%, 70%)', // Purple
+                            'hsl(199, 89%, 48%)',  // Cyan
+                          ];
+                          return (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={colors[index % colors.length]}
+                              stroke="hsl(var(--card))"
+                              strokeWidth={2}
+                            />
+                          );
+                        })}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px',
+                        }}
+                        formatter={(value: number, name: string) => [value, name]}
+                      />
+                      <Legend
+                        wrapperStyle={{ paddingTop: '20px' }}
+                        iconType="circle"
+                      />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Second Row: Project Overview and Completion Rate */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Project Overview - Composed Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Project Overview
+                </CardTitle>
+                <CardDescription>Total, active, and completed projects comparison</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <ComposedChart
+                    data={[
+                      {
+                        category: 'Projects',
+                        total: stats.totalProjects,
+                        active: stats.activeProjects,
+                        completed: stats.completedProjects,
+                      },
+                    ]}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="category" 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                      stroke="hsl(var(--border))"
+                    />
+                    <YAxis 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                      stroke="hsl(var(--border))"
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                      }}
+                    />
+                    <Legend
+                      wrapperStyle={{ paddingTop: '10px' }}
+                    />
+                    <Bar 
+                      dataKey="total" 
+                      fill="hsl(217, 91%, 60%)" 
+                      name="Total Projects"
+                      radius={[8, 8, 0, 0]}
+                    />
+                    <Bar 
+                      dataKey="active" 
+                      fill="hsl(142, 76%, 36%)" 
+                      name="Active Projects"
+                      radius={[8, 8, 0, 0]}
+                    />
+                    <Bar 
+                      dataKey="completed" 
+                      fill="hsl(38, 92%, 50%)" 
+                      name="Completed Projects"
+                      radius={[8, 8, 0, 0]}
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Completion Rate - Area Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LineChartIcon className="h-5 w-5" />
+                  Project Completion Rate
+                </CardTitle>
+                <CardDescription>Visualization of project completion metrics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart
+                    data={[
+                      {
+                        name: 'Total',
+                        value: stats.totalProjects,
+                        fill: 'hsl(217, 91%, 60%)',
+                      },
+                      {
+                        name: 'Active',
+                        value: stats.activeProjects,
+                        fill: 'hsl(142, 76%, 36%)',
+                      },
+                      {
+                        name: 'Completed',
+                        value: stats.completedProjects,
+                        fill: 'hsl(38, 92%, 50%)',
+                      },
+                    ]}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <defs>
+                      <linearGradient id="completionGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                      stroke="hsl(var(--border))"
+                    />
+                    <YAxis 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                      stroke="hsl(var(--border))"
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="hsl(38, 92%, 50%)"
+                      strokeWidth={2}
+                      fill="url(#completionGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+                <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {stats.totalProjects}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Total</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {stats.activeProjects}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Active</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {stats.completedProjects}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Completed</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Third Row: Task and Notification Trends */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Task Status Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckSquare className="h-5 w-5" />
+                  Task Overview
+                </CardTitle>
+                <CardDescription>Pending tasks and notifications summary</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart
+                    data={[
+                      {
+                        name: 'Tasks',
+                        pending: stats.pendingTasks,
+                        completed: (stats.totalProjects || 0) - stats.pendingTasks,
+                      },
+                    ]}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                      stroke="hsl(var(--border))"
+                    />
+                    <YAxis 
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                      stroke="hsl(var(--border))"
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '6px',
+                      }}
+                    />
+                    <Legend />
+                    <Bar 
+                      dataKey="pending" 
+                      fill="hsl(38, 92%, 50%)" 
+                      name="Pending Tasks"
+                      radius={[8, 8, 0, 0]}
+                    />
+                    <Bar 
+                      dataKey="completed" 
+                      fill="hsl(142, 76%, 36%)" 
+                      name="Completed Tasks"
+                      radius={[8, 8, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Notification Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Notification Status
+                </CardTitle>
+                <CardDescription>Unread notifications overview</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center h-[250px]">
+                  <div className="text-center">
+                    <div className="relative w-48 h-48 mx-auto">
+                      <svg className="transform -rotate-90 w-48 h-48">
+                        <circle
+                          cx="96"
+                          cy="96"
+                          r="80"
+                          stroke="hsl(var(--muted))"
+                          strokeWidth="12"
+                          fill="none"
+                        />
+                        <circle
+                          cx="96"
+                          cy="96"
+                          r="80"
+                          stroke={stats.unreadNotifications > 0 ? "hsl(0, 84%, 60%)" : "hsl(142, 76%, 36%)"}
+                          strokeWidth="12"
+                          fill="none"
+                          strokeDasharray={`${(stats.unreadNotifications / Math.max(stats.totalProjects, 1)) * 502.4} 502.4`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div>
+                          <p className="text-4xl font-bold">
+                            {stats.unreadNotifications}
+                          </p>
+                          <p className="text-sm text-muted-foreground">Unread</p>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      {stats.unreadNotifications === 0 
+                        ? 'All caught up!' 
+                        : `${stats.unreadNotifications} notification${stats.unreadNotifications !== 1 ? 's' : ''} require attention`}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
 
       {/* Quick Actions */}

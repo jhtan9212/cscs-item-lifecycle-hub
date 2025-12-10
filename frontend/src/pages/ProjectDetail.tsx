@@ -9,6 +9,7 @@ import { WorkflowControls } from '@/components/workflow/WorkflowControls';
 import { ItemList } from '@/components/items/ItemList';
 import { ItemForm } from '@/components/items/ItemForm';
 import { CommentList } from '@/components/comments/CommentList';
+import { VersionHistory } from '@/components/versions/VersionHistory';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +20,7 @@ import { formatDate } from '@/utils/formatters';
 import { usePermissions } from '@/hooks/usePermissions';
 import { commentService } from '@/services/commentService';
 import type { Comment } from '@/types/project';
-import { ArrowLeft, AlertCircle, Info } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Info, History } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { getErrorMessage } from '@/lib/errorUtils';
 
@@ -32,7 +33,7 @@ export const ProjectDetail = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'items' | 'workflow' | 'comments'>(
+  const [activeTab, setActiveTab] = useState<'overview' | 'items' | 'workflow' | 'comments' | 'versions'>(
     'overview'
   );
   const [showItemForm, setShowItemForm] = useState(false);
@@ -247,6 +248,10 @@ export const ProjectDetail = () => {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="versions">
+            <History className="mr-2 h-4 w-4" />
+            Version History
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -371,6 +376,10 @@ export const ProjectDetail = () => {
 
         <TabsContent value="comments" className="space-y-6">
           <CommentList projectId={project.id} comments={comments} onCommentAdded={loadComments} />
+        </TabsContent>
+
+        <TabsContent value="versions" className="space-y-6">
+          <VersionHistory entityType="project" entityId={project.id} />
         </TabsContent>
       </Tabs>
     </div>

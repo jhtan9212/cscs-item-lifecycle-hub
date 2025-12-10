@@ -10,6 +10,8 @@ import tasksRouter from './tasks';
 import dashboardRouter from './dashboard';
 import auditLogsRouter from './auditLogs';
 import organizationsRouter from './organizations';
+import versionsRouter from './versions';
+import eventsRouter from './events';
 
 const router = Router();
 
@@ -24,6 +26,8 @@ router.use('/tasks', tasksRouter);
 router.use('/dashboard', dashboardRouter);
 router.use('/audit-logs', auditLogsRouter);
 router.use('/organizations', organizationsRouter);
+router.use('/versions', versionsRouter);
+router.use('/events', eventsRouter);
 
 export default router;
 
