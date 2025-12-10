@@ -12,6 +12,7 @@ export const getAllProjects = async (req: Request, res: Response): Promise<Respo
     }
 
     // Get user to check if admin and permissions
+    // organizationId is a direct field on User model, so it's automatically included
     const user = await prisma.user.findUnique({
       where: { id: req.user.userId },
       include: { role: true },
@@ -123,11 +124,15 @@ export const getAllProjects = async (req: Request, res: Response): Promise<Respo
       return res.json(projects);
     }
 
-    // Build where clause - filter by organization unless admin or has VIEW_ALL_PROJECTS
-    // Users with VIEW_PROJECT can see projects from their organization
+    // Build where clause - filter by organization unless admin
+    // ALL non-admin users (including those with VIEW_PROJECT) must be filtered by organization
+    // Only admins and users with VIEW_ALL_PROJECTS can see all projects (but still filtered by org for non-admins)
     const where: any = {};
-    if (!user.role.isAdmin && !hasViewAllProjects) {
-      // Non-admin users without VIEW_ALL_PROJECTS see only their organization's projects
+    
+    // Always filter by organization for non-admin users
+    // VIEW_ALL_PROJECTS allows seeing all projects WITHIN their organization, not across organizations
+    if (!user.role.isAdmin) {
+      // Non-admin users see only their organization's projects
       // If user has no organization, they see projects with no organization
       if (user.organizationId) {
         where.organizationId = user.organizationId;
@@ -136,7 +141,7 @@ export const getAllProjects = async (req: Request, res: Response): Promise<Respo
         where.organizationId = null;
       }
     }
-    // Note: Users with VIEW_PROJECT but not VIEW_ALL_PROJECTS are still filtered by organization above
+    // Admins see all projects (no organization filter)
 
     const projects = await prisma.project.findMany({
       where,
