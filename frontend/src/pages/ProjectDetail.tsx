@@ -377,6 +377,24 @@ export const ProjectDetail = () => {
             </Alert>
           )}
 
+          {project.currentStage === 'Item Comparison' && project.lifecycleType === 'TRANSITIONING_ITEM' && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                <div className="space-y-2">
+                  <p className="font-semibold">Item Comparison Stage - Action Required</p>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Review old item specifications in the Items tab</li>
+                    <li>Document new item specifications</li>
+                    <li>Compare and document differences (item number changes, specification changes, category changes)</li>
+                    <li>Add comparison notes using the Comments tab</li>
+                    <li>Once comparison is complete, advance to the next stage</li>
+                  </ul>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {project.currentStage === 'Freight Strategy' && hasPermission('UPDATE_ITEM') && (
             <Alert>
               <Info className="h-4 w-4" />

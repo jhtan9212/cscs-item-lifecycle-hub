@@ -343,7 +343,7 @@ export const createProject = async (req: Request, res: Response): Promise<Respon
         name,
         description,
         lifecycleType: lifecycleType || 'NEW_ITEM',
-        status: 'DRAFT',
+        status: 'IN_PROGRESS', // Set to IN_PROGRESS when workflow is initialized
         currentStage: 'Draft',
         createdById: userId,
         organizationId: user?.organizationId || null,
