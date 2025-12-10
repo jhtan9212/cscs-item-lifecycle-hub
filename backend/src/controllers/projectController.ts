@@ -573,10 +573,11 @@ export const getMyAssignedProjects = async (req: Request, res: Response): Promis
       },
     });
 
-    // Build organization filter - Admin or users with VIEW_ALL_PROJECTS see all, others see only their org
+    // Build organization filter - ALL non-admin users must be filtered by organization
+    // VIEW_ALL_PROJECTS means "all projects within their organization", not "all projects across all organizations"
     const orgFilter: any = {};
-    if (!user.role.isAdmin && !hasViewAllProjects) {
-      // Non-admin users without VIEW_ALL_PROJECTS see only their organization's projects
+    if (!user.role.isAdmin) {
+      // ALL non-admin users see only their organization's projects
       // If user has no organization, they see projects with no organization
       if (user.organizationId) {
         orgFilter.organizationId = user.organizationId;
@@ -586,7 +587,8 @@ export const getMyAssignedProjects = async (req: Request, res: Response): Promis
       }
     }
 
-    // Admin or users with VIEW_ALL_PROJECTS see all non-completed projects (within org scope if applicable)
+    // Admin sees all non-completed projects (no organization filter)
+    // Users with VIEW_ALL_PROJECTS see all non-completed projects within their organization
     if (user.role.isAdmin || hasViewAllProjects) {
       const projects = await prisma.project.findMany({
         where: { ...orgFilter, status: { not: 'COMPLETED' } },
