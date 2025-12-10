@@ -21,6 +21,9 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
   const isDCOperator = userRole === 'DC Operator';
   const isAdmin = user?.role?.isAdmin || false;
   const isCategoryManager = userRole === 'Category Manager';
+  const isStrategicSupply = userRole === 'Strategic Supply Manager';
+  const isPricingSpecialist = userRole === 'Pricing Specialist';
+  const isLogistics = userRole === 'Logistics';
   
   const [formData, setFormData] = useState<Partial<Item>>({
     name: item?.name || '',
@@ -53,8 +56,9 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
     try {
       setLoading(true);
       
-      // For suppliers, only submit supplier-specific fields
+      // Role-based data submission
       if (isSupplier) {
+        // For suppliers, only submit supplier-specific fields
         const supplierData: Partial<Item> = {
           supplierItemNumber: formData.supplierItemNumber,
           supplierPrice: formData.supplierPrice,
@@ -68,8 +72,74 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
           dcNotes: formData.dcNotes,
         };
         await onSubmit(dcData);
+      } else if (isCategoryManager) {
+        // For Category Manager, only submit basic info and CM fields
+        const cmData: Partial<Item> = {
+          name: formData.name,
+          description: formData.description,
+          category: formData.category,
+          cmItemNumber: formData.cmItemNumber,
+          cmDescription: formData.cmDescription,
+          cmCategory: formData.cmCategory,
+          ownedByCategoryManager: true,
+        };
+        await onSubmit(cmData);
+      } else if (isStrategicSupply) {
+        // For Strategic Supply Manager, submit basic info, CM fields (read-only), and SS fields
+        const ssData: Partial<Item> = {
+          name: formData.name,
+          description: formData.description,
+          category: formData.category,
+          cmItemNumber: formData.cmItemNumber,
+          cmDescription: formData.cmDescription,
+          cmCategory: formData.cmCategory,
+          ssSupplier: formData.ssSupplier,
+          ownedByCategoryManager: item?.ownedByCategoryManager ?? true,
+          ownedByStrategicSupply: true,
+        };
+        await onSubmit(ssData);
+      } else if (isPricingSpecialist) {
+        // For Pricing Specialist, submit basic info, CM fields (read-only), SS fields (read-only), and pricing fields
+        const pricingData: Partial<Item> = {
+          name: formData.name,
+          description: formData.description,
+          category: formData.category,
+          cmItemNumber: formData.cmItemNumber,
+          cmDescription: formData.cmDescription,
+          cmCategory: formData.cmCategory,
+          ssSupplier: formData.ssSupplier,
+          supplierPrice: formData.supplierPrice,
+          kinexoPrice: formData.kinexoPrice,
+          ownedByCategoryManager: item?.ownedByCategoryManager ?? true,
+          ownedByStrategicSupply: item?.ownedByStrategicSupply ?? false,
+          ownedByPricingSpecialist: true,
+        };
+        await onSubmit(pricingData);
+      } else if (isLogistics) {
+        // For Logistics, submit basic info, CM fields (read-only), SS fields (read-only), pricing fields (read-only), and logistics fields
+        const logisticsData: Partial<Item> = {
+          name: formData.name,
+          description: formData.description,
+          category: formData.category,
+          cmItemNumber: formData.cmItemNumber,
+          cmDescription: formData.cmDescription,
+          cmCategory: formData.cmCategory,
+          ssSupplier: formData.ssSupplier,
+          supplierPrice: formData.supplierPrice,
+          kinexoPrice: formData.kinexoPrice,
+          freightStrategy: formData.freightStrategy,
+          freightBrackets: formData.freightBrackets,
+          ownedByCategoryManager: item?.ownedByCategoryManager ?? true,
+          ownedByStrategicSupply: item?.ownedByStrategicSupply ?? false,
+          ownedByPricingSpecialist: item?.ownedByPricingSpecialist ?? false,
+          ownedByLogistics: true,
+        };
+        await onSubmit(logisticsData);
+      } else if (isAdmin) {
+        // Admin can submit all fields
+        await onSubmit(formData);
       } else {
-        // For other roles, submit all form data
+        // Default: submit all form data (fallback)
         await onSubmit(formData);
       }
     } catch (error) {
@@ -81,8 +151,8 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information - Show for all roles except Supplier and DC Operator */}
-      {!isSupplier && !isDCOperator && (
+      {/* Basic Information - Show for Category Manager, Strategic Supply, Pricing Specialist, Logistics, and Admin */}
+      {(isCategoryManager || isStrategicSupply || isPricingSpecialist || isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
           <div className="space-y-4">
@@ -106,8 +176,8 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       )}
 
-      {/* Category Manager Fields - Hide for Supplier and DC Operator */}
-      {!isSupplier && !isDCOperator && (
+      {/* Category Manager Fields - Show for Category Manager, Strategic Supply, Pricing Specialist, Logistics, and Admin */}
+      {(isCategoryManager || isStrategicSupply || isPricingSpecialist || isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.CATEGORY_MANAGER.owner} />
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Manager Fields</h3>
@@ -116,23 +186,26 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
               label="CM Item Number"
               value={formData.cmItemNumber}
               onChange={(e) => setFormData({ ...formData, cmItemNumber: e.target.value })}
+              disabled={Boolean(!isCategoryManager && !isAdmin && item?.id)} // Read-only for other roles when editing
             />
             <Input
               label="CM Description"
               value={formData.cmDescription}
               onChange={(e) => setFormData({ ...formData, cmDescription: e.target.value })}
+              disabled={Boolean(!isCategoryManager && !isAdmin && item?.id)} // Read-only for other roles when editing
             />
             <Input
               label="CM Category"
               value={formData.cmCategory}
               onChange={(e) => setFormData({ ...formData, cmCategory: e.target.value })}
+              disabled={Boolean(!isCategoryManager && !isAdmin && item?.id)} // Read-only for other roles when editing
             />
           </div>
         </div>
       )}
 
-      {/* Strategic Supply Fields - Hide for Supplier and DC Operator */}
-      {!isSupplier && !isDCOperator && (
+      {/* Strategic Supply Fields - Show for Strategic Supply Manager, Pricing Specialist, Logistics, and Admin */}
+      {(isStrategicSupply || isPricingSpecialist || isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.STRATEGIC_SUPPLY.owner} />
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Strategic Supply Fields</h3>
@@ -141,13 +214,14 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
               label="Supplier"
               value={formData.ssSupplier}
               onChange={(e) => setFormData({ ...formData, ssSupplier: e.target.value })}
+              disabled={!isStrategicSupply && !isAdmin && !!item?.id} // Read-only for other roles when editing
             />
           </div>
         </div>
       )}
 
-      {/* Pricing Specialist Fields - Hide for Supplier and DC Operator */}
-      {!isSupplier && !isDCOperator && (
+      {/* Pricing Specialist Fields - Show for Pricing Specialist, Logistics, and Admin */}
+      {(isPricingSpecialist || isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.PRICING_SPECIALIST.owner} />
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Pricing Fields</h3>
@@ -160,6 +234,7 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
               onChange={(e) =>
                 setFormData({ ...formData, supplierPrice: parseFloat(e.target.value) || undefined })
               }
+              disabled={!isPricingSpecialist && !isAdmin && !!item?.id} // Read-only for Logistics when editing
             />
             <Input
               label="KINEXO Price"
@@ -169,13 +244,14 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
               onChange={(e) =>
                 setFormData({ ...formData, kinexoPrice: parseFloat(e.target.value) || undefined })
               }
+              disabled={!isPricingSpecialist && !isAdmin && !!item?.id} // Read-only for Logistics when editing
             />
           </div>
         </div>
       )}
 
-      {/* Logistics Fields - Hide for Supplier and DC Operator */}
-      {!isSupplier && !isDCOperator && (
+      {/* Logistics Fields - Show for Logistics and Admin */}
+      {(isLogistics || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <FieldOwnershipLabel owner={FIELD_OWNERSHIP.LOGISTICS.owner} />
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Logistics Fields</h3>
@@ -215,8 +291,8 @@ export const ItemForm: FC<ItemFormProps> = ({ item, onSubmit, onCancel }) => {
         </div>
       )}
 
-      {/* Supplier Fields - Hide for DC Operator */}
-      {!isDCOperator && (
+      {/* Supplier Fields - Show for Supplier and Admin */}
+      {(isSupplier || isAdmin) && (
         <div className="bg-white rounded-lg shadow-md p-6">
         <FieldOwnershipLabel owner={FIELD_OWNERSHIP.SUPPLIER.owner} />
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Supplier Fields</h3>
