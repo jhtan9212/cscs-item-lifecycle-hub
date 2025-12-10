@@ -89,6 +89,7 @@ export class WorkflowEngine {
         createdBy: {
           include: { role: true },
         },
+        organization: true,
       },
     });
 
@@ -127,6 +128,30 @@ export class WorkflowEngine {
     if (user.role.isAdmin) {
       return { canAdvance: true };
     }
+
+    // Organization boundary check: Non-admin users can only advance workflows for projects in their organization
+    if (user.organizationId && project.organizationId) {
+      // Both have organization - must match
+      if (project.organizationId !== user.organizationId) {
+        return {
+          canAdvance: false,
+          reason: 'You can only advance workflows for projects in your organization',
+        };
+      }
+    } else if (user.organizationId && !project.organizationId) {
+      // User has org but project doesn't - not allowed
+      return {
+        canAdvance: false,
+        reason: 'You can only advance workflows for projects in your organization',
+      };
+    } else if (!user.organizationId && project.organizationId) {
+      // User has no org but project does - not allowed
+      return {
+        canAdvance: false,
+        reason: 'You can only advance workflows for projects in your organization',
+      };
+    }
+    // Both have no organization or both match - continue with role check
 
     // If current step has a requiredRole, user's role must match
     // Prefer workflow definition over database value to handle cases where database has incorrect requiredRole
@@ -345,14 +370,25 @@ export class WorkflowEngine {
     return await this.getWorkflowStatus(projectId);
   }
 
-  static async moveBack(projectId: string, userId: string, comment?: string) {
+  static async canMoveBack(projectId: string, userId: string): Promise<{ canMoveBack: boolean; reason?: string }> {
     const currentStep = await this.getCurrentStep(projectId);
     if (!currentStep) {
-      throw new Error('No current step found');
+      return { canMoveBack: false, reason: 'No active workflow step found' };
     }
 
     if (currentStep.stepOrder === 1) {
-      throw new Error('Cannot move back from first stage');
+      return { canMoveBack: false, reason: 'Cannot move back from first stage' };
+    }
+
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        organization: true,
+      },
+    });
+
+    if (!project) {
+      return { canMoveBack: false, reason: 'Project not found' };
     }
 
     // Role-based authorization: Check if user's role matches the required role of the current step
@@ -362,30 +398,74 @@ export class WorkflowEngine {
     });
 
     if (!user) {
-      throw new Error('User not found');
+      return { canMoveBack: false, reason: 'User not found' };
+    }
+
+    // Admin can always move back
+    if (user.role.isAdmin) {
+      return { canMoveBack: true };
+    }
+
+    // Organization boundary check: Non-admin users can only move back workflows for projects in their organization
+    if (user.organizationId && project.organizationId) {
+      // Both have organization - must match
+      if (project.organizationId !== user.organizationId) {
+        return {
+          canMoveBack: false,
+          reason: 'You can only move back workflows for projects in your organization',
+        };
+      }
+    } else if (user.organizationId && !project.organizationId) {
+      // User has org but project doesn't - not allowed
+      return {
+        canMoveBack: false,
+        reason: 'You can only move back workflows for projects in your organization',
+      };
+    } else if (!user.organizationId && project.organizationId) {
+      // User has no org but project does - not allowed
+      return {
+        canMoveBack: false,
+        reason: 'You can only move back workflows for projects in your organization',
+      };
+    }
+    // Both have no organization or both match - continue with role check
+
+    // If current step has a requiredRole, user's role must match
+    // Prefer workflow definition over database value to handle cases where database has incorrect requiredRole
+    const stages = this.getStagesForLifecycle(project.lifecycleType);
+    const expectedRole = stages.find((s) => s.name === currentStep.stepName)?.requiredRole;
+    const effectiveRequiredRole = expectedRole || currentStep.requiredRole;
+    
+    if (effectiveRequiredRole && user.role.name !== effectiveRequiredRole) {
+      return {
+        canMoveBack: false,
+        reason: `Only users with role "${effectiveRequiredRole}" can move back from this stage. Current user role: "${user.role.name}"`,
+      };
+    }
+
+    return { canMoveBack: true };
+  }
+
+  static async moveBack(projectId: string, userId: string, comment?: string) {
+    const canMoveBackResult = await this.canMoveBack(projectId, userId);
+    if (!canMoveBackResult.canMoveBack) {
+      throw new Error(canMoveBackResult.reason || 'Cannot move back workflow');
+    }
+
+    const currentStep = await this.getCurrentStep(projectId);
+    if (!currentStep) {
+      throw new Error('No current step found');
     }
 
     const project = await prisma.project.findUnique({
       where: { id: projectId },
+      include: {
+        organization: true,
+      },
     });
 
     if (!project) {
       throw new Error('Project not found');
-    }
-
-    // Admin can always move back
-    if (!user.role.isAdmin) {
-      // If current step has a requiredRole, user's role must match
-      // Prefer workflow definition over database value to handle cases where database has incorrect requiredRole
-      const stages = this.getStagesForLifecycle(project.lifecycleType);
-      const expectedRole = stages.find((s) => s.name === currentStep.stepName)?.requiredRole;
-      const effectiveRequiredRole = expectedRole || currentStep.requiredRole;
-      
-      if (effectiveRequiredRole && user.role.name !== effectiveRequiredRole) {
-        throw new Error(
-          `Only users with role "${effectiveRequiredRole}" can move back from this stage. Current user role: "${user.role.name}"`
-        );
-      }
     }
 
     const previousStepOrder = currentStep.stepOrder - 1;

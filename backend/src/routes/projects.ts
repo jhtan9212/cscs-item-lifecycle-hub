@@ -30,7 +30,7 @@ router.get(
 router.get(
   '/:id/workflow',
   authenticate,
-  checkAnyPermission('VIEW_PROJECT', 'VIEW_ALL_PROJECTS'),
+  checkAnyPermission('VIEW_PROJECT', 'VIEW_ALL_PROJECTS', 'VIEW_OWN_PROJECTS'),
   projectController.getWorkflowStatus
 );
 

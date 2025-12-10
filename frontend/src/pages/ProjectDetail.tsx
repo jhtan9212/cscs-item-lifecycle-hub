@@ -39,14 +39,42 @@ export const ProjectDetail = () => {
   const [showItemForm, setShowItemForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [workflowStatus, setWorkflowStatus] = useState<{
+    canAdvance: boolean;
+    canAdvanceReason?: string;
+    canMoveBack: boolean;
+    canMoveBackReason?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (id) {
       loadProject();
       loadItems();
       loadComments();
+      loadWorkflowStatus();
     }
   }, [id]);
+
+  const loadWorkflowStatus = async () => {
+    try {
+      if (id) {
+        const data = await projectService.getWorkflowStatus(id);
+        setWorkflowStatus({
+          canAdvance: data.canAdvance ?? false,
+          canAdvanceReason: data.canAdvanceReason,
+          canMoveBack: data.canMoveBack ?? false,
+          canMoveBackReason: data.canMoveBackReason,
+        });
+      }
+    } catch (err: any) {
+      console.error('Failed to load workflow status:', err);
+      // Set defaults if workflow status can't be loaded
+      setWorkflowStatus({
+        canAdvance: false,
+        canMoveBack: false,
+      });
+    }
+  };
 
   const loadComments = async () => {
     try {
@@ -94,6 +122,7 @@ export const ProjectDetail = () => {
     try {
       await projectService.advanceWorkflow(id, comment);
       await loadProject();
+      await loadWorkflowStatus(); // Reload workflow status after advancement
       toast({
         title: 'Workflow Advanced',
         description: 'The workflow has been successfully advanced to the next stage.',
@@ -107,6 +136,7 @@ export const ProjectDetail = () => {
         description: errorMessage,
         variant: 'destructive',
       });
+      await loadWorkflowStatus(); // Reload workflow status to update UI
       throw err;
     }
   };
@@ -116,6 +146,7 @@ export const ProjectDetail = () => {
     try {
       await projectService.moveBackWorkflow(id, comment);
       await loadProject();
+      await loadWorkflowStatus(); // Reload workflow status after move back
       toast({
         title: 'Workflow Moved Back',
         description: 'The workflow has been successfully moved back to the previous stage.',
@@ -127,6 +158,7 @@ export const ProjectDetail = () => {
         description: errorMessage,
         variant: 'destructive',
       });
+      await loadWorkflowStatus(); // Reload workflow status to update UI
       throw err;
     }
   };
@@ -367,8 +399,10 @@ export const ProjectDetail = () => {
           <WorkflowControls
             projectId={project.id}
             currentStage={project.currentStage}
-            canAdvance={project.status !== 'COMPLETED'}
-            canMoveBack={true}
+            canAdvance={workflowStatus?.canAdvance ?? false}
+            canAdvanceReason={workflowStatus?.canAdvanceReason}
+            canMoveBack={workflowStatus?.canMoveBack ?? false}
+            canMoveBackReason={workflowStatus?.canMoveBackReason}
             onAdvance={handleAdvanceWorkflow}
             onMoveBack={handleMoveBackWorkflow}
           />

@@ -10,7 +10,9 @@ interface WorkflowControlsProps {
   projectId: string;
   currentStage: string;
   canAdvance: boolean;
+  canAdvanceReason?: string;
   canMoveBack: boolean;
+  canMoveBackReason?: string;
   onAdvance: (comment?: string) => Promise<void>;
   onMoveBack: (comment?: string) => Promise<void>;
 }
@@ -18,7 +20,9 @@ interface WorkflowControlsProps {
 export const WorkflowControls = ({
   currentStage,
   canAdvance,
+  canAdvanceReason,
   canMoveBack,
+  canMoveBackReason,
   onAdvance,
   onMoveBack,
 }: WorkflowControlsProps) => {
@@ -112,6 +116,16 @@ export const WorkflowControls = ({
           {!canAdvanceWorkflow && !canMoveBackWorkflow && (
             <p className="text-sm text-muted-foreground">
               You don't have permission to modify workflow
+            </p>
+          )}
+          {canAdvanceWorkflow && !canAdvance && canAdvanceReason && (
+            <p className="text-sm text-muted-foreground">
+              {canAdvanceReason}
+            </p>
+          )}
+          {canMoveBackWorkflow && !canMoveBack && canMoveBackReason && (
+            <p className="text-sm text-muted-foreground">
+              {canMoveBackReason}
             </p>
           )}
         </div>

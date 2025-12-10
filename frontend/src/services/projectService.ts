@@ -41,6 +41,14 @@ export const projectService = {
     return response.data;
   },
 
+  checkCanAdvance: async (id: string): Promise<{ canAdvance: boolean; reason?: string }> => {
+    const response = await api.get(`/projects/${id}/workflow`);
+    return {
+      canAdvance: response.data.canAdvance ?? false,
+      reason: response.data.canAdvanceReason,
+    };
+  },
+
   getMyAssigned: async (): Promise<Project[]> => {
     const response = await api.get<Project[]>('/projects/my-assigned');
     return response.data;

@@ -540,8 +540,24 @@ export const moveBackWorkflow = async (req: Request, res: Response): Promise<Res
 export const getWorkflowStatus = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { id } = req.params;
+    
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const result = await WorkflowEngine.getWorkflowStatus(id);
-    return res.json(result);
+    
+    // Also check if user can advance/move back
+    const canAdvanceResult = await WorkflowEngine.canAdvance(id, req.user.userId);
+    const canMoveBackResult = await WorkflowEngine.canMoveBack(id, req.user.userId);
+    
+    return res.json({
+      ...result,
+      canAdvance: canAdvanceResult.canAdvance,
+      canAdvanceReason: canAdvanceResult.reason,
+      canMoveBack: canMoveBackResult.canMoveBack,
+      canMoveBackReason: canMoveBackResult.reason,
+    });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }

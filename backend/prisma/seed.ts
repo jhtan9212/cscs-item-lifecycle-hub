@@ -217,7 +217,9 @@ async function main() {
     'CREATE_ITEM', 'UPDATE_ITEM', 'DELETE_ITEM', 'VIEW_ITEM',
     'CREATE_PROJECT', 'UPDATE_OWN_PROJECTS', 'VIEW_ALL_PROJECTS', 'VIEW_OWN_PROJECTS',
     'APPROVE_AS_CM', 'REJECT_PROJECTS', 'SUBMIT_FOR_REVIEW', 'VIEW_FREIGHT_STRATEGY',
-    'APPROVE_PRICING', 'VIEW_PRICING'
+    'APPROVE_PRICING', 'VIEW_PRICING',
+    'ADVANCE_WORKFLOW', // Required to advance workflow from Draft and CM Approval stages
+    'MOVE_BACK_WORKFLOW' // Required to move workflow back if needed
   ];
   for (const permName of cmPermissions) {
     const permission = createdPermissions.find(p => p.name === permName);
