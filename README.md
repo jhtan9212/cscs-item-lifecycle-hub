@@ -51,162 +51,89 @@ cscs_poc/
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Local Setup with Docker
 
-- Node.js 18+ and npm
-- PostgreSQL 14+
-- Git
+**Prerequisites:** Docker (20.10+) and Docker Compose (2.0+)
 
-### Installation
-
-1. **Clone the repository**
+1. **Clone and setup**
    ```bash
    git clone <repository-url>
-   cd cscs_poc
+   cd Item-Lifecycle-Hub
+   cp .env.example .env
+   # Edit .env with your configuration
    ```
 
-2. **Backend Setup**
+2. **Start services**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Access the application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
+
+### Local Setup without Docker
+
+**Prerequisites:** Node.js 18+, npm, PostgreSQL 14+
+
+1. **Backend**
    ```bash
    cd backend
    npm install
-   
-   # Set up environment variables
    cp .env.example .env
-   # Edit .env with your database URL and JWT secret
-   
-   # Run database migrations
    npx prisma migrate dev
-   
-   # Seed the database
    npm run prisma:seed
-   
-   # Start development server
    npm run dev
    ```
 
-3. **Frontend Setup**
+2. **Frontend**
    ```bash
    cd frontend
    npm install
-   
-   # Set up environment variables
    cp .env.example .env
-   # Edit .env with your API URL
-   
-   # Start development server
    npm run dev
    ```
 
 ## 📝 Environment Variables
 
-### Backend (.env)
-```env
-NODE_ENV=development
-PORT=3000
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-JWT_SECRET=your-secret-key-here
-JWT_EXPIRES_IN=7d
-CORS_ORIGIN=http://localhost:5173
-```
+**Docker:** Create `.env` in root directory (see `.env.example`)
 
-### Frontend (.env)
-```env
-VITE_API_URL=http://localhost:3000/api
-```
+**Manual:** Create `.env` files in `backend/` and `frontend/` directories
 
-## 🛠️ Development
+## 🛠️ Database Management
 
-### Code Quality
-
-**Frontend:**
+**Docker:**
 ```bash
-npm run lint          # Run ESLint
-npm run lint:fix      # Fix ESLint errors
-npm run format        # Format with Prettier
+docker-compose exec backend npx prisma migrate dev    # Run migrations
+docker-compose exec backend npm run prisma:seed       # Seed database
+docker-compose exec backend npx prisma studio         # Open Prisma Studio
+```
+
+**Manual:**
+```bash
+cd backend
+npx prisma migrate dev    # Run migrations
+npm run prisma:seed      # Seed database
+npx prisma studio        # Open Prisma Studio
+```
+
+## 🧹 Linting & Formatting
+
+**Frontend (Docker):**
+```bash
+docker-compose exec frontend npm run lint          # Check for linting errors
+docker-compose exec frontend npm run lint:fix       # Fix linting errors
+docker-compose exec frontend npm run format        # Format code with Prettier
+docker-compose exec frontend npm run format:check  # Check formatting
+docker-compose exec frontend npm run type-check    # TypeScript type checking
+```
+
+**Frontend (Manual):**
+```bash
+cd frontend
+npm run lint          # Check for linting errors
+npm run lint:fix      # Fix linting errors
+npm run format        # Format code with Prettier
+npm run format:check  # Check formatting
 npm run type-check    # TypeScript type checking
 ```
-
-**Backend:**
-```bash
-npm run build         # Compile TypeScript
-npm run lint          # Run ESLint (if configured)
-```
-
-### Database Management
-
-```bash
-# Generate Prisma Client
-npm run prisma:generate
-
-# Create migration
-npm run prisma:migrate
-
-# Open Prisma Studio
-npm run prisma:studio
-
-# Seed database
-npm run prisma:seed
-```
-
-## 📚 Documentation
-
-- [Coding Standards](./CODING_STANDARDS.md) - Comprehensive coding standards and best practices
-- [API Documentation](./docs/API.md) - API endpoint documentation (if available)
-- [Testing Guide](./docs/TESTING.md) - Testing guidelines (if available)
-
-## 🔒 Security
-
-This project follows OWASP security best practices:
-
-- Input validation on all endpoints
-- SQL injection prevention (Prisma ORM)
-- XSS protection
-- CSRF protection
-- Secure password hashing (bcrypt)
-- JWT authentication
-- Role-based access control (RBAC)
-- Security headers middleware
-- Rate limiting
-
-## 🧪 Testing
-
-```bash
-# Run tests (when implemented)
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-```
-
-## 📦 Building for Production
-
-**Backend:**
-```bash
-npm run build
-npm start
-```
-
-**Frontend:**
-```bash
-npm run build
-npm run preview
-```
-
-## 🤝 Contributing
-
-1. Follow the [Coding Standards](./CODING_STANDARDS.md)
-2. Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
-3. Ensure all tests pass
-4. Run linter and formatter before committing
-
-## 📄 License
-
-[Your License Here]
-
-## 👥 Authors
-
-[Your Team/Name Here]
-
----
-
-For detailed coding standards and best practices, see [CODING_STANDARDS.md](./CODING_STANDARDS.md).

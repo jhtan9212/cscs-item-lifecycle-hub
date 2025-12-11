@@ -48,7 +48,12 @@ services:
         condition: service_healthy
       db_init:
         condition: service_completed_successfully
-    command: ./start-dev.sh
+    command: >
+      sh -c "
+        dos2unix /app/start-dev.sh 2>&1 || true &&
+        chmod +x /app/start-dev.sh &&
+        sh /app/start-dev.sh
+      "
     networks:
       - cscs_network
 
@@ -75,9 +80,15 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        chmod +x create-user.sh init-db.sh wait-for-db.sh 2>/dev/null || true &&
-        ./create-user.sh &&
-        ./init-db.sh
+        echo '=== Listing /app directory ===' &&
+        ls -la /app/ | grep -E '\.(sh|ts|json)$' || ls -la /app/ &&
+        echo '=== Converting line endings and making executable ===' &&
+        dos2unix /app/create-user.sh /app/init-db.sh /app/wait-for-db.sh 2>&1 || true &&
+        chmod +x /app/create-user.sh /app/init-db.sh /app/wait-for-db.sh &&
+        echo '=== Running create-user.sh ===' &&
+        /app/create-user.sh &&
+        echo '=== Running init-db.sh ===' &&
+        /app/init-db.sh
       "
     networks:
       - cscs_network
