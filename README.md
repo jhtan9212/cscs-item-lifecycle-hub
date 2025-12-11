@@ -22,6 +22,21 @@ A comprehensive project management platform for managing item lifecycles with ro
 - **JWT** - Authentication
 - **bcryptjs** - Password hashing
 
+## 🏛️ Architecture
+
+The platform follows a **3-tier architecture** with clear separation of concerns:
+
+```
+Frontend (React) → Backend (Express) → Database (PostgreSQL)
+```
+
+### Key Components
+
+- **Frontend**: React 19 with TypeScript, component-based architecture with protected routes
+- **Backend**: Express.js REST API with service layer for business logic
+- **Database**: PostgreSQL with Prisma ORM for type-safe database access
+- **Core Services**: WorkflowEngine, EventService, NotificationService, TaskService, VersionService
+
 ## 📁 Project Structure
 
 ```
@@ -46,7 +61,6 @@ cscs_poc/
 │   │   └── utils/         # Utility functions
 │   ├── prisma/            # Database schema & migrations
 │   └── package.json
-└── CODING_STANDARDS.md    # Coding standards documentation
 ```
 
 ## 🚀 Getting Started
@@ -137,3 +151,55 @@ npm run format        # Format code with Prettier
 npm run format:check  # Check formatting
 npm run type-check    # TypeScript type checking
 ```
+
+## 📋 Part 2: Advanced POC Implementation
+
+### A. Full Lifecycle Modeling ✅
+
+Supports all three lifecycle types with role-based workflows:
+- **New Item** (8 stages): Draft → Freight Strategy → Supplier Pricing → KINEXO Pricing → CM Approval → SSM Approval → In Transition → Completed
+- **Transitioning Item** (9 stages): Draft → Item Comparison → Freight Strategy → Supplier Pricing → KINEXO Pricing → CM Approval → SSM Approval → DC Transition → Completed
+- **Deleting Item** (6 stages): Draft → Impact Analysis → SSM Review → DC Runout → Archive → Completed
+
+Features: Role-based progression, approve/reject with comments, resubmission support, stage-specific tasks
+
+### B. Full Role-Based Access & Privilege Model ✅
+
+**Roles**: Category Manager, Pricing Specialist, SSM, Logistics, DC Operator, Supplier, Distributor, Admin
+
+**RBAC**: Granular permissions, role-permission matrix, organization-level access control, protected routes and API middleware
+
+### C. Asynchronous Business Processes ✅
+
+**Workflow States**: DRAFT, IN_PROGRESS, WAITING_ON_SUPPLIER, WAITING_ON_DISTRIBUTOR, INTERNAL_REVIEW, COMPLETED, REJECTED
+
+**Features**: Asynchronous event processing, notifications, automatic task creation, comments, stateful handoffs with version tracking
+
+**Sequential Workflow**: Implements full 10-step workflow from project creation through DC transitions to completion
+
+### D. Expanded Data Model ✅
+
+**Core**: Users, Roles, Permissions, Organizations  
+**Workflow**: Projects, Items, WorkflowSteps, LifecycleEvents  
+**Collaboration**: Comments, Tasks, Notifications  
+**Audit**: AuditLogs, ItemVersions, ProjectVersions  
+**System**: Dashboards, User/Role Management, Organization Settings
+
+### E. Deployment ✅
+
+Docker Compose setup with automated database initialization, seeding, and health checks. See [Getting Started](#-getting-started) for setup instructions.
+
+### F. Scalability & Enterprise Considerations ✅
+
+- **Multi-Tenancy**: Organization-level data isolation
+- **Event-Driven**: Asynchronous event processing with status tracking
+- **Audit Logging**: Comprehensive audit trail with searchable interface
+- **Version History**: Automatic versioning with full data snapshots
+
+### G. Optional UI Enhancements ✅
+
+Role-aware interfaces, color-coded workflow stages, dashboards with statistics, visual workflow timeline, and full lifecycle progress visualization
+
+### H. Bonus Features ✅
+
+Version control, comments system, task management, notifications, event system, theme support, responsive design, TypeScript type safety, RESTful API, comprehensive error handling, security (JWT, RBAC, rate limiting)
