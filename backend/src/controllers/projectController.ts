@@ -269,7 +269,7 @@ export const getProject = async (req: Request, res: Response): Promise<Response>
       }
 
       // Then check if project is assigned to user's role
-      const currentStep = project.workflowSteps.find(s => s.status === 'IN_PROGRESS');
+      const currentStep = project.workflowSteps.find((s: { status: string; requiredRole: string | null }) => s.status === 'IN_PROGRESS');
       if (currentStep && currentStep.requiredRole === user.role.name) {
         return res.json(project);
       }

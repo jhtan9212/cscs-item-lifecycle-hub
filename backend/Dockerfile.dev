@@ -1,0 +1,22 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache \
+    netcat-openbsd \
+    postgresql-client \
+    openssl \
+    openssl-dev \
+    libc6-compat
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+RUN chmod +x wait-for-db.sh init-db.sh create-user.sh start-dev.sh || true
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+
